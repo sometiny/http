@@ -11,7 +11,7 @@ using IocpSharp.Server;
 
 namespace IocpSharp.Http
 {
-    public class HttpServer : TcpIocpServer
+    public class SendJsFile : TcpIocpServer
     {
         protected override void NewClient(Socket client)
         {

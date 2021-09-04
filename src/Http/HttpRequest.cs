@@ -21,6 +21,7 @@ namespace IocpSharp.Http
         public string Url => _url;
         public string HttpProtocol => _httpProtocol;
         public string OriginHeaders => _originHeaders;
+        public NameValueCollection Headers => _headers;
 
 
         internal HttpRequest() { }

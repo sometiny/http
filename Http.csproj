@@ -43,17 +43,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="demo\Gzip.cs" />
+    <Compile Include="demo\HelloWorldWithChunked.cs" />
+    <Compile Include="demo\HelloWorldWithResponser.cs" />
+    <Compile Include="demo\HelloWorld.cs" />
+    <Compile Include="demo\SendJsFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Http\HttpResponse.cs" />
-    <Compile Include="Http\HttpRequest.cs" />
-    <Compile Include="Http\HttpRequestException.cs" />
-    <Compile Include="Http\HttpResponser.cs" />
-    <Compile Include="Http\HttpServer.cs" />
-    <Compile Include="Http\HttpStatus.cs" />
-    <Compile Include="Http\Responsers\ChunkedResponser.cs" />
-    <Compile Include="Http\Responsers\ContentdResponser.cs" />
-    <Compile Include="Http\Streams\ChunkedWriteStream.cs" />
+    <Compile Include="src\Http\HttpResponse.cs" />
+    <Compile Include="src\Http\HttpRequest.cs" />
+    <Compile Include="src\Http\Streams\BufferedNetworkStream.cs" />
+    <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
+    <Compile Include="src\Http\Utils\AsyncResult.cs" />
+    <Compile Include="src\Http\Utils\HttpRequestException.cs" />
+    <Compile Include="src\Http\HttpResponser.cs" />
+    <Compile Include="src\Http\HttpServer.cs" />
+    <Compile Include="src\Http\Utils\HttpStatus.cs" />
+    <Compile Include="src\Http\Responsers\ChunkedResponser.cs" />
+    <Compile Include="src\Http\Responsers\ContentdResponser.cs" />
+    <Compile Include="src\Http\Streams\ChunkedWriteStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IocpSharp\IocpSharp.csproj">
