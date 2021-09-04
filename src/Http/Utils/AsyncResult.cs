@@ -13,7 +13,7 @@ namespace IocpSharp.Http.Utils
     /// 代码里的注释也是.Net源码里面来的
     /// </summary>
     /// <typeparam name="T">结果类型，这里使用泛型，省去不必要的拆包封包</typeparam>
-    public class AsyncResult<T> : IAsyncResult, IDisposable
+    internal class AsyncResult<T> : IAsyncResult, IDisposable
     {
         private AsyncCallback _userCallback;
         private object _userStateObject;

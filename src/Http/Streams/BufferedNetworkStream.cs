@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http.Streams
 {
@@ -14,14 +15,14 @@ namespace IocpSharp.Http.Streams
         /// 实现NetworkStream的两个构造方法
         /// </summary>
         /// <param name="baseSocket">基础Socket</param>
-        public BufferedNetworkStream(Socket baseSocket) : base(baseSocket){}
+        public BufferedNetworkStream(Socket baseSocket) : base(baseSocket) { }
 
         /// <summary>
         /// 实现NetworkStream的两个构造方法
         /// </summary>
         /// <param name="baseSocket">基础Socket</param>
         /// <param name="ownSocket">是否拥有Socket，为true的话，在Stream关闭的同时，关闭Socket</param>
-        public BufferedNetworkStream(Socket baseSocket, bool ownSocket) : base(baseSocket, ownSocket){}
+        public BufferedNetworkStream(Socket baseSocket, bool ownSocket) : base(baseSocket, ownSocket) { }
 
         /// <summary>
         /// 定义变量，标识当前流是否在Buffered模式下运行
@@ -30,7 +31,8 @@ namespace IocpSharp.Http.Streams
         /// 例如在两个流拷贝数据的时候，都是大的数据块，没必要再去缓冲
         /// </summary>
         private bool _buffered = true;
-        public bool Buffered { 
+        public bool Buffered
+        {
             get => _buffered;
             set => _buffered = value;
         }
@@ -58,7 +60,7 @@ namespace IocpSharp.Http.Streams
         /// <returns></returns>
         public override int ReadByte()
         {
-            if(_length > 0)
+            if (_length > 0)
             {
                 _length--;
                 return _buffer[_offset++];
@@ -76,7 +78,7 @@ namespace IocpSharp.Http.Streams
         public override int Read(byte[] buffer, int offset, int size)
         {
             //缓冲区没有数据，从基础流中读取数据到缓冲区。
-            if(_length == 0 && _buffered)
+            if (_length == 0 && _buffered)
             {
                 //索引恢复到起始位置
                 _offset = 0;
@@ -92,6 +94,94 @@ namespace IocpSharp.Http.Streams
                 return base.Read(buffer, offset, size);
             }
             return CopyFromBuffer(buffer, offset, size);
+        }
+
+        /// <summary>
+        /// 重写BeginRead方法，用户从缓冲区中读数据
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="size"></param>
+        /// <param name="callback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        {
+            //代码逻辑同Read方法一样
+            if (_length == 0 && _buffered)
+            {
+                _offset = 0;
+                //使用我们自己实现的IAsyncResult类
+                BufferedAsyncReadResult asyncResult = new BufferedAsyncReadResult(callback, state, buffer, offset, size);
+
+                //从基础流中读取数据，并且在回调里面处理数据的拷贝和处理
+                base.BeginRead(_buffer, _offset, _buffer.Length, AfterRead, asyncResult);
+                return asyncResult;
+
+            }
+
+            //缓冲区内有数据，直接拷贝给下游应用，同样使用我们自己实现的IAsyncResult类
+            if (_length > 0)
+            {
+                int rec = CopyFromBuffer(buffer, offset, size);
+                BufferedAsyncReadResult asyncResult = new BufferedAsyncReadResult(callback, state, buffer, offset, size);
+                asyncResult.BytesTransfered = rec;
+                asyncResult.CallUserCallback();
+                return asyncResult;
+            }
+            
+            //没开启缓冲，直接调用基类方法
+            return base.BeginRead(buffer, offset, size, callback, state);
+        }
+
+        /// <summary>
+        /// 从基础流读数据到缓冲区的回调。
+        /// </summary>
+        /// <param name="asyncResult"></param>
+        private void AfterRead(IAsyncResult asyncResult)
+        {
+            //AsyncState属性值是我们自己实现的IAsyncResult类
+            BufferedAsyncReadResult asyncReadResult = asyncResult.AsyncState as BufferedAsyncReadResult;
+            try
+            {
+                int rec = base.EndRead(asyncResult);
+                if (rec == 0)
+                {
+                    //没读到数据，直接返回
+                    asyncReadResult.BytesTransfered = 0;
+                    asyncReadResult.CallUserCallback();
+                    return;
+                }
+                //拷贝数据给下游应用
+                _length += rec;
+                asyncReadResult.BytesTransfered = CopyFromBuffer(asyncReadResult.Buffer, asyncReadResult.Offset, asyncReadResult.Count);
+                asyncReadResult.CallUserCallback();
+            }
+            catch (Exception e)
+            {
+                //设置异步调用异常
+                asyncReadResult.SetFailed(e);
+            }
+        }
+
+        /// <summary>
+        /// 重写EndRead方法
+        /// </summary>
+        /// <param name="asyncResult"></param>
+        /// <returns></returns>
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            //如果asyncResult是我们自己实现的IAsyncResult类
+            if (asyncResult is BufferedAsyncReadResult asyncReadResult)
+            {
+                //有异常，抛出异常给下游应用
+                if (asyncReadResult.Exception != null)
+                    throw asyncReadResult.Exception;
+
+                //返回实际传输的数据大小。
+                return asyncReadResult.BytesTransfered;
+            }
+            return base.EndRead(asyncResult);
         }
 
         private int CopyFromBuffer(byte[] buffer, int offset, int size)
@@ -115,7 +205,7 @@ namespace IocpSharp.Http.Streams
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            _buffer = null; 
+            _buffer = null;
             base.Dispose(disposing);
         }
 

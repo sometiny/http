@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace IocpSharp.Http.Utils
 {
     /// <summary>
-    /// 基于我们自己封装的AsyncResult，再封装一个用于读写数据的AsyncReadWriteResult
-    /// 在重写NetworkStream的BeginRead/BeginWrite方法时会用到
+    /// 基于我们自己封装的AsyncResult，再封装一个用于读数据的BufferedAsyncReadResult
+    /// 在BufferedNetworkStream中重写NetworkStream的BeginRead方法时会用到
     /// </summary>
-    internal class AsyncReadWriteResult : AsyncResult<object>
+    internal class BufferedAsyncReadResult : AsyncResult<object>
     {
         /// <summary>
         /// 实际Read/Write传输的数据大小
@@ -37,7 +37,7 @@ namespace IocpSharp.Http.Utils
         /// </summary>
         /// <param name="callback">回调函数</param>
         /// <param name="state">用户状态</param>
-        public AsyncReadWriteResult(AsyncCallback callback, object state) : this(callback, state, null, 0, 0)
+        public BufferedAsyncReadResult(AsyncCallback callback, object state) : this(callback, state, null, 0, 0)
         {
         }
         /// <summary>
@@ -48,7 +48,7 @@ namespace IocpSharp.Http.Utils
         /// <param name="buffer">设置缓冲区</param>
         /// <param name="offset">数据在缓冲区中的偏移</param>
         /// <param name="count">准备传输的数据大小</param>
-        public AsyncReadWriteResult(AsyncCallback callback, object state, byte[] buffer, int offset, int count)
+        public BufferedAsyncReadResult(AsyncCallback callback, object state, byte[] buffer, int offset, int count)
             : base(callback, state)
         {
             Buffer = buffer;
