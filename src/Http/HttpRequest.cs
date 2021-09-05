@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Specialized;
+using IocpSharp.Http.Streams;
 
 namespace IocpSharp.Http
 {
@@ -61,11 +62,71 @@ namespace IocpSharp.Http
         public HttpRequest Ready()
         {
             _originHeaders += "\r\n";
+
+            string header = _headers["content-length"];
+            if (!string.IsNullOrEmpty(header))
+            {
+                if(!long.TryParse(header, out _contentLength))
+                {
+                    _contentLength = -1;
+                    throw new Exception("Content-Length字段值错误");
+                }
+            }
+
+            _transferEncoding = _headers["transfer-encoding"];
+
+            int idx = _url.IndexOf('?');
+            _path = _url;
+            if (idx >= 0)
+            {
+                _path = _url.Substring(0, idx);
+                _query = _url.Substring(idx).TrimStart('?');
+            }
+
             return this;
         }
+
+        private long _contentLength = -1;
+        private string _transferEncoding = null;
+        private string _path = null;
+        private string _query = null;
+
+        public string Path => _path;
+        public string Query => _query;
+
+        /// <summary>
+        /// 确认请求是否包含消息
+        /// </summary>
+        public bool HasEntityBody => _contentLength > 0
+            || !string.IsNullOrEmpty(_transferEncoding);
+
+
+        private Stream _entityReadStream = null;
+        public Stream OpenRead(Stream baseStream)
+        {
+            if (!HasEntityBody) throw new Exception("请求不包含消息");
+
+            if(_entityReadStream != null)
+            {
+                return _entityReadStream;
+            }
+
+            //如果同时出现transfer-encoding和content-length
+            //优先处理transfer-encoding，忽略content-length
+            if (!string.IsNullOrEmpty(_transferEncoding))
+            {
+                //返回一个ChunkedReadStream
+                return _entityReadStream;
+            }
+
+            //返回一个ContentedReadStream
+            return new ContentedReadStream(_contentLength, baseStream, true);
+        }
+
+
+
+
         private bool _firstLineParsed = false;
-
-
         /// <summary>
         /// 解析请求头首行，例如：GET / HTTP/1.1
         /// </summary>

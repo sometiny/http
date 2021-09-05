@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="demo\BufferedStreamTest.cs" />
     <Compile Include="demo\Gzip.cs" />
     <Compile Include="demo\HelloWorldWithChunked.cs" />
     <Compile Include="demo\HelloWorldWithResponser.cs" />
@@ -53,7 +54,9 @@
     <Compile Include="src\Http\HttpResponse.cs" />
     <Compile Include="src\Http\HttpRequest.cs" />
     <Compile Include="src\Http\Streams\BufferedNetworkStream.cs" />
+    <Compile Include="src\Http\Streams\ContentedReadStream.cs" />
     <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
+    <Compile Include="src\Http\Utils\BufferedAsyncReadResult.cs" />
     <Compile Include="src\Http\Utils\AsyncResult.cs" />
     <Compile Include="src\Http\Utils\HttpRequestException.cs" />
     <Compile Include="src\Http\HttpResponser.cs" />
