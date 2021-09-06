@@ -144,6 +144,7 @@ namespace IocpSharp.Http
 
             responser.Write(stream, "<style type=\"text/css\">body{font-size:14px;}</style>");
             responser.Write(stream, "<h4>Hello World!</h4>");
+            responser.Write(stream, $"<a href=\"/\">返回</a><br />");
             responser.Write(stream, $"Host Name: {request.Headers["host"]} <br />");
             responser.Write(stream, $"Method: {request.Method} <br />");
             responser.Write(stream, $"Request Url: {request.Url} <br />");
