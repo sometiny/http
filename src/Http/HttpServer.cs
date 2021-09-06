@@ -60,7 +60,7 @@ namespace IocpSharp.Http
                     if (!handler(request, stream)) break;
 
                     //确保当前请求的请求实体读取完毕
-                    request.EnsureEntityBodyRead(stream);
+                    request.EnsureEntityBodyRead();
                     //释放掉当前请求，准备下一次请求
                     processedRequest++;
                 }
@@ -128,7 +128,7 @@ namespace IocpSharp.Http
             {
                 using (MemoryStream output = new MemoryStream())
                 {
-                    using (Stream input = request.OpenRead(stream))
+                    using (Stream input = request.OpenRead())
                     {
                         input.CopyTo(output);
                     }

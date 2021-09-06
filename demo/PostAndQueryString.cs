@@ -84,7 +84,7 @@ namespace IocpSharp.Http
                 {
                     using(MemoryStream output  = new MemoryStream())
                     {
-                        using(Stream input = request.OpenRead(stream))
+                        using(Stream input = request.OpenRead())
                         {
                             input.CopyTo(output);
                         }

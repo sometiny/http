@@ -18,6 +18,7 @@ namespace IocpSharp.Http
         private string _httpProtocol = null;
         private string _originHeaders = "";
         private NameValueCollection _headers = new NameValueCollection();
+        private Stream _baseStream = null;
 
         public string Method => _method;
         public string Url => _url;
@@ -26,7 +27,9 @@ namespace IocpSharp.Http
         public NameValueCollection Headers => _headers;
 
 
-        internal HttpRequest() { }
+        internal HttpRequest(Stream baseStream) { 
+            _baseStream = baseStream; 
+        }
         public HttpRequest(string url, string method = "GET", string httpProtocol = "HTTP/1.1")
         {
             _url = url;
@@ -113,7 +116,7 @@ namespace IocpSharp.Http
 
 
         private Stream _entityReadStream = null;
-        public Stream OpenRead(Stream baseStream)
+        public Stream OpenRead()
         {
             if (!HasEntityBody) throw new Exception("请求不包含消息");
 
@@ -132,7 +135,7 @@ namespace IocpSharp.Http
             }
 
             //返回一个ContentedReadStream
-            return _entityReadStream = new ContentedReadStream(_contentLength, baseStream, true);
+            return _entityReadStream = new ContentedReadStream(_contentLength, _baseStream, true);
         }
 
         /// <summary>
@@ -141,11 +144,11 @@ namespace IocpSharp.Http
         /// 我们必须得这么做，也就是将OpenRead打开的流读完
         /// 否则在KeepAlive保持的长链里，极有可能造成“脏读”，导致下一个request没法被正常解析
         /// </summary>
-        public void EnsureEntityBodyRead(Stream baseStream)
+        public void EnsureEntityBodyRead()
         {
             //没有请求实体或者数据已经被读了，忽略
             if (!HasEntityBody || _entityReadStream != null) return;
-            using(Stream forward = OpenRead(baseStream))
+            using(Stream forward = OpenRead())
             {
                 byte[] forwardBytes = new byte[32768];
                 //读取，丢弃
@@ -219,7 +222,7 @@ namespace IocpSharp.Http
         {
             byte[] lineBuffer = new byte[65536];
 
-            HttpRequest request = new HttpRequest();
+            HttpRequest request = new HttpRequest(source);
 
             //循环读取请求头，解析每一行
             while (true)
@@ -291,6 +294,7 @@ namespace IocpSharp.Http
             _headers?.Clear();
             if (disposing)
             {
+                _baseStream = null;
                 _entityReadStream = null;
                 _url = null;
                 _query = null;
