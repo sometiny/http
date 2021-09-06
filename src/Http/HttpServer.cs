@@ -119,24 +119,6 @@ namespace IocpSharp.Http
         /// <returns></returns>
         private bool OnReceivedPost(HttpRequest request, Stream stream)
         {
-            byte[] entityContent = null;
-
-            //如果浏览器传从数据了
-            //打开一个读取流，然后把数据拷贝到内存流
-            //这个数据的获取，可以放在HttpRequest实现
-            if (request.HasEntityBody)
-            {
-                using (MemoryStream output = new MemoryStream())
-                {
-                    using (Stream input = request.OpenRead())
-                    {
-                        input.CopyTo(output);
-                    }
-                    entityContent = output.ToArray();
-                }
-            }
-
-
             //展示下客户端请求的一些东西
             HttpResponser responser = new ChunkedResponser();
 
@@ -151,36 +133,21 @@ namespace IocpSharp.Http
             responser.Write(stream, $"HttpPrototol: {request.HttpProtocol} <br />");
             responser.Write(stream, $"Time Now: {DateTime.Now: yyyy-MM-dd HH:mm:ss} <br /><br />");
 
-
-            responser.Write(stream, $"查询参数：{request.Query}<br />");
+            //输出解析后的查询字符串数据
             responser.Write(stream, $"查询参数解析结果：<br />");
-
             var queryString = request.QueryString;
             foreach (string name in queryString.Keys)
             {
                 responser.Write(stream, $"&nbsp; &nbsp; {name} = {queryString[name]}<br />");
             }
 
-            if (entityContent != null)
+            //输出解析后的form表单数据
+            var form = request.Form;
+            responser.Write(stream, $"POST解析结果：<br />");
+            foreach (string name in form.Keys)
             {
-                //请求实体的原文本数据
-                string formString = Encoding.UTF8.GetString(entityContent);
-
-                //解析文本为NameValueCollection
-                var form = HttpUtility.ParseUriComponents(formString);
-
-                //输出原文
-                responser.Write(stream, $"POST原内容：{formString}<br />");
-
-                //输出解析后的数据
-                responser.Write(stream, $"POST解析结果：<br />");
-                foreach (string name in form.Keys)
-                {
-                    responser.Write(stream, $"&nbsp; &nbsp; {name} = {form[name]}<br />");
-                }
-
+                responser.Write(stream, $"&nbsp; &nbsp; {name} = {form[name]}<br />");
             }
-
 
             responser.End(stream);
 

@@ -91,6 +91,9 @@ namespace IocpSharp.Http
 
         private long _contentLength = -1;
         private string _transferEncoding = null;
+
+        #region QueryString相关参数和属性
+
         private string _path = null;
         private string _query = null;
         private NameValueCollection _queryString = null;
@@ -107,6 +110,48 @@ namespace IocpSharp.Http
                 return _queryString = HttpUtility.ParseUriComponents(_query);
             }
         }
+
+        #endregion
+
+        #region 请求实体相关参数和属性
+        private byte[] _requestBody = null;
+        private NameValueCollection _form = null;
+
+
+        /// <summary>
+        /// 从请求中读取请求实体
+        /// 需要把数据缓存起来
+        /// </summary>
+        public byte[] RequestBody
+        {
+            get
+            {
+                if (_requestBody != null) return _requestBody;
+                if (!HasEntityBody) return new byte[0];
+
+                using (MemoryStream output = new MemoryStream())
+                {
+                    using (Stream input = OpenRead())
+                    {
+                        input.CopyTo(output);
+                    }
+                    return _requestBody = output.ToArray();
+                }
+
+            }
+        }
+        public NameValueCollection Form
+        {
+            get
+            {
+                //在获取属性值时才初始化_form的值
+                if (_form != null) return _form;
+
+                return _form = HttpUtility.ParseUriComponents(Encoding.UTF8.GetString(RequestBody));
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 确认请求是否包含消息
@@ -292,6 +337,7 @@ namespace IocpSharp.Http
             _entityReadStream?.Dispose();
             _queryString?.Clear();
             _headers?.Clear();
+            _form?.Clear();
             if (disposing)
             {
                 _baseStream = null;
@@ -299,8 +345,10 @@ namespace IocpSharp.Http
                 _url = null;
                 _query = null;
                 _queryString = null;
+                _form = null;
                 _headers = null;
                 _originHeaders = null;
+                _requestBody = null;
             }
         }
 
