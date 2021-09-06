@@ -11,11 +11,14 @@ namespace IocpSharp.Http
         None,
         NotWellFormed,
         LineLengthExceedsLimit,
+        ConnectionLost,
         NoneUrl
     }
     public class HttpRequestException : Exception
     {
         private HttpRequestError _error = HttpRequestError.None;
+
+        public HttpRequestError Error => _error;
         public HttpRequestException(HttpRequestError error) : base()
         {
             _error = error;

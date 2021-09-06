@@ -133,7 +133,25 @@ namespace IocpSharp.Http
             }
 
             //返回一个ContentedReadStream
-            return new ContentedReadStream(_contentLength, baseStream, true);
+            return _entityReadStream = new ContentedReadStream(_contentLength, baseStream, true);
+        }
+
+        /// <summary>
+        /// 关于请求实体，RFC2616有一句‘A server SHOULD read and forward a message-body on any request;’
+        /// 对于任何request，服务端应该将请求实体“读完”
+        /// 我们必须得这么做，也就是将OpenRead打开的流读完
+        /// 否则在KeepAlive保持的长链里，极有可能造成“脏读”，导致下一个request没法被正常解析
+        /// </summary>
+        public void EnsureEntityBodyRead(Stream baseStream)
+        {
+            //没有请求实体或者数据已经被读了，忽略
+            if (!HasEntityBody || _entityReadStream != null) return;
+            using(Stream forward = OpenRead(baseStream))
+            {
+                byte[] forwardBytes = new byte[32768];
+                //读取，丢弃
+                while (forward.Read(forwardBytes, 0, 32768) > 0) ;
+            }
         }
 
 
@@ -255,7 +273,7 @@ namespace IocpSharp.Http
                     throw new HttpRequestException(HttpRequestError.LineLengthExceedsLimit);
             }
             //请求头还没解析完就没数据了
-            throw new HttpRequestException(HttpRequestError.NotWellFormed);
+            throw new HttpRequestException(HttpRequestError.ConnectionLost);
         }
 
         ~HttpRequest()
