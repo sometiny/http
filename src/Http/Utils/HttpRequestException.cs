@@ -12,6 +12,7 @@ namespace IocpSharp.Http
         NotWellFormed,
         LineLengthExceedsLimit,
         ConnectionLost,
+        ContentLengthError,
         NoneUrl
     }
     public class HttpRequestException : Exception

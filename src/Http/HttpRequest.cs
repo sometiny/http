@@ -69,8 +69,7 @@ namespace IocpSharp.Http
             {
                 if (!long.TryParse(header, out _contentLength))
                 {
-                    _contentLength = -1;
-                    throw new Exception("Content-Length字段值错误");
+                    throw new HttpRequestException(HttpRequestError.ContentLengthError);
                 }
             }
 

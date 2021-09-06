@@ -211,6 +211,12 @@ namespace IocpSharp.Http
             return true;
         }
 
+        /// <summary>
+        /// 响应404错误
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
         private bool OnNotFound(HttpRequest request, Stream stream)
         {
             HttpResponser responser = new ChunkedResponser(404);
@@ -228,15 +234,13 @@ namespace IocpSharp.Http
         /// <param name="request"></param>
         /// <param name="stream"></param>
         /// <param name="message"></param>
-        /// <returns></returns>
-        private bool OnBadRequest(Stream stream, string message)
+        private void OnBadRequest(Stream stream, string message)
         {
             HttpResponser responser = new ChunkedResponser(400);
             responser.KeepAlive = false;
             responser.ContentType = "text/html; charset=utf-8";
             responser.Write(stream, message);
             responser.End(stream);
-            return false;
         }
 
         /// <summary>
@@ -245,15 +249,13 @@ namespace IocpSharp.Http
         /// <param name="request"></param>
         /// <param name="stream"></param>
         /// <param name="message"></param>
-        /// <returns></returns>
-        private bool OnServerError(Stream stream, string message)
+        private void OnServerError(Stream stream, string message)
         {
             HttpResponser responser = new ChunkedResponser(500);
             responser.KeepAlive = false;
             responser.ContentType = "text/html; charset=utf-8";
             responser.Write(stream, message);
             responser.End(stream);
-            return false;
         }
 
     }
