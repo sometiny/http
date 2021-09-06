@@ -268,18 +268,25 @@ namespace IocpSharp.Http
             byte[] lineBuffer = new byte[65536];
 
             HttpRequest request = new HttpRequest(source);
-
-            //循环读取请求头，解析每一行
-            while (true)
+            try
             {
-                string line = ReadLine(source, lineBuffer);
+                //循环读取请求头，解析每一行
+                while (true)
+                {
+                    string line = ReadLine(source, lineBuffer);
 
-                //遇到空行，说明请求头读取完毕，返回
-                if (string.IsNullOrEmpty(line))
-                    return request.Ready();
+                    //遇到空行，说明请求头读取完毕，返回
+                    if (string.IsNullOrEmpty(line))
+                        return request.Ready();
 
-                //在HttpRequest实例中，解析每一行的数据
-                request.ParseLine(line);
+                    //在HttpRequest实例中，解析每一行的数据
+                    request.ParseLine(line);
+                }
+            }
+            catch
+            {
+                request.Dispose();
+                throw;
             }
         }
 
