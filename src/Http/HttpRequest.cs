@@ -10,7 +10,7 @@ using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http
 {
-    public class HttpRequest
+    public class HttpRequest : IDisposable
     {
 
         private string _method = null;
@@ -256,6 +256,40 @@ namespace IocpSharp.Http
             }
             //请求头还没解析完就没数据了
             throw new HttpRequestException(HttpRequestError.NotWellFormed);
+        }
+
+        ~HttpRequest()
+        {
+            Disposing(false);
+        }
+
+        /// <summary>
+        /// 清理工作，必要的时候关闭下实体读取的流
+        /// </summary>
+        /// <param name="disposing"></param>
+        private void Disposing(bool disposing)
+        {
+            _entityReadStream?.Dispose();
+            _queryString?.Clear();
+            _headers?.Clear();
+            if (disposing)
+            {
+                _entityReadStream = null;
+                _url = null;
+                _query = null;
+                _queryString = null;
+                _headers = null;
+                _originHeaders = null;
+            }
+        }
+
+        /// <summary>
+        /// 实现Dispose，做一些必要的清理工作
+        /// </summary>
+        public void Dispose()
+        {
+            Disposing(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
