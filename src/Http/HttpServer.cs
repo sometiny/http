@@ -13,81 +13,15 @@ using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http
 {
-    public class HttpServer : TcpIocpServer
+    public class HttpServer : HttpServerBase
     {
-        private static int MaxRequestPerConnection = 20;
-
-        //后面的代码可能会越来越复杂，我们做个简单的路由功能
-        //可以开发功能更强大的路由
-        private Dictionary<string, Func<HttpRequest, Stream, bool>> _routes = new Dictionary<string, Func<HttpRequest, Stream, bool>>();
-
         public HttpServer() : base()
         {
             //注册一些路由
-            _routes["/"] = new Func<HttpRequest, Stream, bool>(OnIndex);
-            _routes["/favicon.ico"] = new Func<HttpRequest, Stream, bool>(OnFavicon);
-            _routes["/post"] = new Func<HttpRequest, Stream, bool>(OnReceivedPost);
-            _routes["*"] = new Func<HttpRequest, Stream, bool>(OnNotFound);
+            RegisterRoute("/", OnIndex);
+            RegisterRoute("/favicon.ico", OnFavicon);
+            RegisterRoute("/post", OnReceivedPost);
         }
-
-        protected override void NewClient(Socket client)
-        {
-            //控制台输出下，跟踪下新连接
-            Console.WriteLine($"New Client: {client.RemoteEndPoint}");
-
-            Stream stream = new BufferedNetworkStream(client, true);
-
-            //设置每个链接能处理的请求数
-            int processedRequest = 0;
-            while (processedRequest < MaxRequestPerConnection)
-            {
-                HttpRequest request = null;
-                try
-                {
-                    //捕获一个HttpRequest
-                    request = HttpRequest.Capture(stream);
-
-                    //控制台输出，跟踪下新请求
-                    Console.WriteLine($"New Request: {request.Method} {request.Url}");
-
-                    //尝试查找路由，不存在的话使用NotFound路由
-                    if (!_routes.TryGetValue(request.Path, out Func<HttpRequest, Stream, bool> handler))
-                    {
-                        handler = _routes["*"];
-                    }
-
-                    //如果处理程序返回false，那么我们退出循环，关掉连接。
-                    if (!handler(request, stream)) break;
-
-                    //确保当前请求的请求实体读取完毕
-                    request.EnsureEntityBodyRead();
-                    //释放掉当前请求，准备下一次请求
-                    processedRequest++;
-                }
-                catch (HttpRequestException e)
-                {
-                    if (e.Error == HttpRequestError.ConnectionLost) break;
-
-                    //客户端发送的请求异常
-                    OnBadRequest(stream, $"请求异常：{e.Error}");
-                    break;
-
-                }
-                catch (Exception e)
-                {
-                    //其他异常
-                    OnServerError(stream, $"请求异常：{e}");
-                    break;
-                }
-                finally
-                {
-                    //始终释放请求
-                    request?.Dispose();
-                }
-            }
-            stream.Close();
-        }
-
         /// <summary>
         /// 首页路由处理程序
         /// </summary>
@@ -176,53 +110,6 @@ namespace IocpSharp.Http
 
             responser.Write(stream, iconData);
             return true;
-        }
-
-        /// <summary>
-        /// 响应404错误
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        private bool OnNotFound(HttpRequest request, Stream stream)
-        {
-            HttpResponser responser = new ChunkedResponser(404);
-            responser.KeepAlive = false;
-            responser.ContentType = "text/html; charset=utf-8";
-            responser.Write(stream, $"请求的资源'{request.Path}'不存在。");
-            responser.End(stream);
-            return false;
-        }
-
-        
-        /// <summary>
-        /// 请求异常
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="stream"></param>
-        /// <param name="message"></param>
-        private void OnBadRequest(Stream stream, string message)
-        {
-            HttpResponser responser = new ChunkedResponser(400);
-            responser.KeepAlive = false;
-            responser.ContentType = "text/html; charset=utf-8";
-            responser.Write(stream, message);
-            responser.End(stream);
-        }
-
-        /// <summary>
-        /// 服务器异常
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="stream"></param>
-        /// <param name="message"></param>
-        private void OnServerError(Stream stream, string message)
-        {
-            HttpResponser responser = new ChunkedResponser(500);
-            responser.KeepAlive = false;
-            responser.ContentType = "text/html; charset=utf-8";
-            responser.Write(stream, message);
-            responser.End(stream);
         }
 
     }
