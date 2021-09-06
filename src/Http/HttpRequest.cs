@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Specialized;
 using IocpSharp.Http.Streams;
+using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http
 {
@@ -66,7 +67,7 @@ namespace IocpSharp.Http
             string header = _headers["content-length"];
             if (!string.IsNullOrEmpty(header))
             {
-                if(!long.TryParse(header, out _contentLength))
+                if (!long.TryParse(header, out _contentLength))
                 {
                     _contentLength = -1;
                     throw new Exception("Content-Length字段值错误");
@@ -90,9 +91,20 @@ namespace IocpSharp.Http
         private string _transferEncoding = null;
         private string _path = null;
         private string _query = null;
+        private NameValueCollection _queryString = null;
 
         public string Path => _path;
         public string Query => _query;
+        public NameValueCollection QueryString
+        {
+            get
+            {
+                //在获取属性值时才初始化_queryString的值
+                if (_queryString != null) return _queryString;
+
+                return _queryString = HttpUtility.ParseUriComponents(_query);
+            }
+        }
 
         /// <summary>
         /// 确认请求是否包含消息

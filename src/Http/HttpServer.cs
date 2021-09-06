@@ -9,6 +9,7 @@ using IocpSharp.Http.Responsers;
 using IocpSharp.Http.Streams;
 using System.IO.Compression;
 using IocpSharp.Server;
+using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http
 {
@@ -56,11 +57,12 @@ namespace IocpSharp.Http
                 responser.KeepAlive = false;
                 responser.ContentType = "text/html; charset=utf-8";
 
-                responser.Write(stream, "<form method=\"POST\" action=\"/post\">");
-                responser.Write(stream, "姓名：<input type=text name=name /> <br />");
-                responser.Write(stream, "年龄：<input type=text name=age /> <br />");
-                responser.Write(stream, "<input type=submit value=提交 /> ");
-                responser.Write(stream, "</form>");
+                responser.Write(stream,
+@"<form method=""POST"" action=""/post?action=save"" >
+姓名：<input type=text name=name value=""测试hello world!"" /> <br />
+年龄：<input type=text name=age value=31 /> <br />
+<input type=submit value=提交 /> 
+</form>");
 
                 responser.End(stream);
                 return true;
@@ -104,9 +106,34 @@ namespace IocpSharp.Http
                 responser.Write(stream, $"HttpPrototol: {request.HttpProtocol} <br />");
                 responser.Write(stream, $"Time Now: {DateTime.Now: yyyy-MM-dd HH:mm:ss} <br /><br />");
 
+
+                responser.Write(stream, $"查询参数：{request.Query}<br />");
+                responser.Write(stream, $"查询参数解析结果：<br />");
+
+                var queryString = request.QueryString;
+                foreach (string name in queryString.Keys)
+                {
+                    responser.Write(stream, $"&nbsp; &nbsp; {name} = {queryString[name]}<br />");
+                }
+
                 if (entityContent != null)
                 {
-                    responser.Write(stream, $"POST内容：" + Encoding.UTF8.GetString(entityContent));
+                    //请求实体的原文本数据
+                    string formString = Encoding.UTF8.GetString(entityContent);
+
+                    //解析文本为NameValueCollection
+                    var form = HttpUtility.ParseUriComponents(formString);
+
+                    //输出原文
+                    responser.Write(stream, $"POST原内容：{formString}<br />");
+
+                    //输出解析后的数据
+                    responser.Write(stream, $"POST解析结果：<br />");
+                    foreach (string name in form.Keys)
+                    {
+                        responser.Write(stream, $"&nbsp; &nbsp; {name} = {form[name]}<br />");
+                    }
+
                 }
 
 

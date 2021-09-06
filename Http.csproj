@@ -65,6 +65,7 @@
     <Compile Include="src\Http\Responsers\ChunkedResponser.cs" />
     <Compile Include="src\Http\Responsers\ContentdResponser.cs" />
     <Compile Include="src\Http\Streams\ChunkedWriteStream.cs" />
+    <Compile Include="src\Http\Utils\HttpUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IocpSharp\IocpSharp.csproj">
