@@ -79,6 +79,7 @@ namespace IocpSharp.Http
 
                 //如果浏览器传从数据了
                 //打开一个读取流，然后把数据拷贝到内存流
+                //这个数据的获取，可以放在HttpRequest实现
                 if (request.HasEntityBody)
                 {
                     using(MemoryStream output  = new MemoryStream())

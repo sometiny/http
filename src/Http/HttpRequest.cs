@@ -128,14 +128,13 @@ namespace IocpSharp.Http
             if (!string.IsNullOrEmpty(_transferEncoding))
             {
                 //返回一个ChunkedReadStream
-                return _entityReadStream;
+                //我们暂不处理这种方式的数据
+                throw new NotSupportedException();
             }
 
             //返回一个ContentedReadStream
             return new ContentedReadStream(_contentLength, baseStream, true);
         }
-
-
 
 
         private bool _firstLineParsed = false;
