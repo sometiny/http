@@ -31,7 +31,7 @@ namespace IocpSharp.Http
         }
         protected override void Start()
         {
-            if (!Directory.Exists(_webRoot)) throw new Exception($"网站根目录不存在：{_webRoot}");
+            if (!Directory.Exists(_webRoot)) throw new Exception($"网站根目录不存在，请手动创建：{_webRoot}");
 
             base.Start();
         }

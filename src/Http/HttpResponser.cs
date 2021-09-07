@@ -15,6 +15,7 @@ namespace IocpSharp.Http
     {
         private HttpResponse _response = null;
         private bool _headerWritten = false;
+        private long _contentLength = 0;
 
         public HttpResponse Response => _response;
 
@@ -42,14 +43,25 @@ namespace IocpSharp.Http
 
         }
 
-        public string this[string name] { 
-            get => _response.Headers[name]; 
-            set => _response.Headers[name] = value;
+        public string this[string name]
+        {
+            get => _response.Headers[name];
+            set
+            {
+                if (name.ToLower() == "content-length") throw new NotSupportedException("不能使用索引属性设置Content-Length的值，请使用ContentLength属性");
+                _response.Headers[name] = value;
+            }
         }
 
         public long ContentLength
         {
-            set => _response.Headers["Content-Length"] = value.ToString();
+            get => _contentLength;
+            set
+            {
+                if (_contentLength < 0) throw new ArgumentOutOfRangeException("ContentLength", "ContentLength的值不能小于0");
+                _contentLength = value;
+                _response.Headers["Content-Length"] = value.ToString();
+            }
         }
         public string Server
         {
@@ -169,17 +181,8 @@ namespace IocpSharp.Http
                 return new ChunkedWriteStream(baseStream, true);
             }
 
-            string contentLengtValue = _response.Headers["content-length"];
-
-            if (string.IsNullOrEmpty(contentLengtValue)) contentLengtValue = "0";
-
-            if(!long.TryParse(contentLengtValue, out long contentLength))
-            {
-                throw new Exception("Content-Length设置错误");
-            }
-
             WriteHeader(baseStream);
-            return new ContentedWriteStream(baseStream, contentLength, true) ;
+            return new ContentedWriteStream(baseStream, _contentLength, true) ;
         }
     }
 }
