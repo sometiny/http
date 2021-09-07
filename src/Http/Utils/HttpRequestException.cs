@@ -13,6 +13,8 @@ namespace IocpSharp.Http
         LineLengthExceedsLimit,
         ConnectionLost,
         ContentLengthError,
+        ResourcePathError,
+        ResourceMimeError,
         NoneUrl
     }
     public class HttpRequestException : Exception

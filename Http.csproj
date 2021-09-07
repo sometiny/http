@@ -57,6 +57,7 @@
     <Compile Include="src\Http\HttpRequest.cs" />
     <Compile Include="src\Http\HttpServerBase.cs" />
     <Compile Include="src\Http\Streams\BufferedNetworkStream.cs" />
+    <Compile Include="src\Http\Streams\ContentedWriteStream.cs" />
     <Compile Include="src\Http\Streams\ContentedReadStream.cs" />
     <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
     <Compile Include="src\Http\Utils\BufferedAsyncReadResult.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="src\Http\Responsers\ContentdResponser.cs" />
     <Compile Include="src\Http\Streams\ChunkedWriteStream.cs" />
     <Compile Include="src\Http\Utils\HttpUtility.cs" />
+    <Compile Include="src\Http\Utils\MimeTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IocpSharp\IocpSharp.csproj">

@@ -18,13 +18,22 @@ namespace IocpSharp.Http
     {
         private static int MaxRequestPerConnection = 20;
 
+        private string _webRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
+
+        public string WebRoot { get => _webRoot; set => _webRoot = value; }
+
         //后面的代码可能会越来越复杂，我们做个简单的路由功能
         //可以开发功能更强大的路由
         private Dictionary<string, Func<HttpRequest, Stream, bool>> _routes = new Dictionary<string, Func<HttpRequest, Stream, bool>>();
 
         public HttpServerBase() : base()
         {
-            _routes["*"] = new Func<HttpRequest, Stream, bool>(OnNotFound);
+        }
+        protected override void Start()
+        {
+            if (!Directory.Exists(_webRoot)) throw new Exception($"网站根目录不存在：{_webRoot}");
+
+            base.Start();
         }
 
         public void RegisterRoute(string path, Func<HttpRequest, Stream, bool> route)
@@ -49,7 +58,8 @@ namespace IocpSharp.Http
                     //尝试查找路由，不存在的话使用NotFound路由
                     if (!_routes.TryGetValue(request.Path, out Func<HttpRequest, Stream, bool> handler))
                     {
-                        handler = _routes["*"];
+                        //未匹配到路由，统一当文件资源处理
+                        handler = OnResource;
                     }
 
                     //如果处理程序返回false，那么我们退出循环，关掉连接。
@@ -129,6 +139,54 @@ namespace IocpSharp.Http
             responser.ContentType = "text/html; charset=utf-8";
             responser.Write(stream, message);
             responser.End(stream);
+        }
+
+        /// <summary>
+        /// 发送服务器资源，这里简单处理下。
+        /// 必要的情况下可以作缓存处理
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="stream"></param>
+        protected virtual bool OnResource(HttpRequest request, Stream stream)
+        {
+            string path = request.Path;
+
+            ///处理下非安全的路径
+            if (path.IndexOf("..") >= 0 || !path.StartsWith("/"))
+            {
+                throw new HttpRequestException(HttpRequestError.ResourcePathError, "不安全的路径访问");
+            }
+
+
+            string filePath = Path.GetFullPath(Path.Combine(_webRoot, "." + path));
+
+            FileInfo fileInfo = new FileInfo(filePath);
+            string mimeType = MimeTypes.GetMimeType(fileInfo.Extension);
+
+            if (string.IsNullOrEmpty(mimeType))
+            {
+                throw new HttpRequestException(HttpRequestError.ResourceMimeError, "不支持的文件类型");
+            }
+
+            if (!fileInfo.Exists)
+            {
+                return OnNotFound(request, stream);
+            }
+
+            HttpResponser responser = new HttpResponser();
+
+            //拿到的MIME输出给客户端
+            responser.ContentType = mimeType;
+            responser.ContentLength = fileInfo.Length;
+
+            using (Stream output = responser.OpenWrite(stream))
+            {
+                using(Stream input = fileInfo.OpenRead())
+                {
+                    input.CopyTo(stream);
+                }
+            }
+            return true;
         }
 
     }

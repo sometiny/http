@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using IocpSharp.Http.Streams;
 
 namespace IocpSharp.Http
 {
@@ -46,7 +47,7 @@ namespace IocpSharp.Http
             set => _response.Headers[name] = value;
         }
 
-        public int ContentLength
+        public long ContentLength
         {
             set => _response.Headers["Content-Length"] = value.ToString();
         }
@@ -162,8 +163,23 @@ namespace IocpSharp.Http
         /// <returns></returns>
         public virtual Stream OpenWrite(Stream baseStream)
         {
+            if (!string.IsNullOrEmpty(_response.Headers["transfer-encoding"]))
+            {
+                WriteHeader(baseStream);
+                return new ChunkedWriteStream(baseStream, true);
+            }
+
+            string contentLengtValue = _response.Headers["content-length"];
+
+            if (string.IsNullOrEmpty(contentLengtValue)) contentLengtValue = "0";
+
+            if(!long.TryParse(contentLengtValue, out long contentLength))
+            {
+                throw new Exception("Content-Length设置错误");
+            }
+
             WriteHeader(baseStream);
-            return baseStream;
+            return new ContentedWriteStream(baseStream, contentLength, true) ;
         }
     }
 }

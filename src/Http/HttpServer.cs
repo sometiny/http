@@ -19,7 +19,6 @@ namespace IocpSharp.Http
         {
             //注册一些路由
             RegisterRoute("/", OnIndex);
-            RegisterRoute("/favicon.ico", OnFavicon);
             RegisterRoute("/post", OnReceivedPost);
         }
         /// <summary>
@@ -87,30 +86,5 @@ namespace IocpSharp.Http
 
             return true;
         }
-
-        /// <summary>
-        /// 输出favicon.ico给浏览器用
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="stream"></param>
-        private bool OnFavicon(HttpRequest request, Stream stream)
-        {
-            HttpResponser responser = new HttpResponser();
-
-            string iconPath = AppDomain.CurrentDomain.BaseDirectory + "favicon.ico";
-            if (!File.Exists(iconPath))
-            {
-                return OnNotFound(request, stream);
-            }
-
-            byte[] iconData = File.ReadAllBytes(iconPath);
-
-            responser.ContentType = "image/vnd.microsoft.icon";
-            responser.ContentLength = iconData.Length;
-
-            responser.Write(stream, iconData);
-            return true;
-        }
-
     }
 }
