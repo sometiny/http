@@ -21,21 +21,14 @@ namespace IocpSharp.Http.Responsers
 
         public ChunkedResponser() : this(200) { }
 
-        public ChunkedResponser(int statusCode) : base(statusCode) {
-
-        }
-
-        public sealed override void WriteHeader(Stream stream)
+        public ChunkedResponser(int statusCode) : base(statusCode)
         {
             //移除长度标头,确保Chunked传输
             Response.RemoveHeader("Content-Length");
 
             //设置传输方式为Chunked
             this["Transfer-Encoding"] = "Chunked";
-
-            base.WriteHeader(stream);
         }
-
         /// <summary>
         /// 对数据封包后，向基础流写入Chunk包
         /// </summary>
@@ -74,16 +67,6 @@ namespace IocpSharp.Http.Responsers
         public override void End(Stream stream)
         {
             base.Write(stream, _endingChunk, 0, 5);
-        }
-
-        /// <summary>
-        /// 打开一个流，用于写入数据
-        /// </summary>
-        /// <param name="baseStream"></param>
-        /// <returns>ChunkedWriteStream流</returns>
-        public override Stream OpenWrite(Stream baseStream)
-        {
-            return new ChunkedWriteStream(base.OpenWrite(baseStream), true);
         }
     }
 }

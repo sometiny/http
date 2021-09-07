@@ -35,6 +35,7 @@ namespace IocpSharp.Http
             _response.Headers["Content-Length"] = null;
             _response.Headers["Content-Encoding"] = null;
             _response.Headers["Content-Range"] = null;
+            _response.Headers["Transfer-Encoding"] = null;
             _response.Headers["Server"] = null;
             _response.Headers["X-Powered-By"] = null;
             _response.Headers["Location"] = null;

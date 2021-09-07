@@ -67,7 +67,6 @@
     <Compile Include="src\Http\HttpServer.cs" />
     <Compile Include="src\Http\Utils\HttpStatus.cs" />
     <Compile Include="src\Http\Responsers\ChunkedResponser.cs" />
-    <Compile Include="src\Http\Responsers\ContentdResponser.cs" />
     <Compile Include="src\Http\Streams\ChunkedWriteStream.cs" />
     <Compile Include="src\Http\Utils\HttpUtility.cs" />
     <Compile Include="src\Http\Utils\MimeTypes.cs" />
