@@ -28,17 +28,11 @@ namespace IocpSharp.Http
         /// <param name="stream"></param>
         private bool OnIndex(HttpRequest request, Stream stream)
         {
-            //展示下客户端请求的一些东西
-            HttpResponser responser = new ChunkedResponser();
-
+            //跳转到页面
+            HttpResponser responser = new ChunkedResponser(301);
             responser.ContentType = "text/html; charset=utf-8";
-
-            responser.Write(stream,
-@"<form method=""POST"" action=""/post?action=save"" >
-姓名：<input type=text name=name value=""测试hello world!"" /> <br />
-年龄：<input type=text name=age value=31 /> <br />
-<input type=submit value=提交 /> 
-</form>");
+            responser["Location"] = "/index.html";
+            responser.Write(stream, "Redirect To '/index.html'");
             responser.End(stream);
 
             return true;
@@ -59,7 +53,7 @@ namespace IocpSharp.Http
 
             responser.Write(stream, "<style type=\"text/css\">body{font-size:14px;}</style>");
             responser.Write(stream, "<h4>Hello World!</h4>");
-            responser.Write(stream, $"<a href=\"/\">返回</a><br />");
+            responser.Write(stream, $"<a href=\"/index.html\">返回</a><br />");
             responser.Write(stream, $"Host Name: {request.Headers["host"]} <br />");
             responser.Write(stream, $"Method: {request.Method} <br />");
             responser.Write(stream, $"Request Url: {request.Url} <br />");
@@ -76,6 +70,7 @@ namespace IocpSharp.Http
 
             //输出解析后的form表单数据
             var form = request.Form;
+            responser.Write(stream, $"POST原值：{Encoding.UTF8.GetString(request.RequestBody)}<br />");
             responser.Write(stream, $"POST解析结果：<br />");
             foreach (string name in form.Keys)
             {

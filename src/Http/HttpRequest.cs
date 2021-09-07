@@ -67,6 +67,15 @@ namespace IocpSharp.Http
         {
             _originHeaders += "\r\n";
 
+            int idx = _url.IndexOf('?');
+            _path = _url;
+            if (idx >= 0)
+            {
+                _path = _url.Substring(0, idx);
+                _query = _url.Substring(idx).TrimStart('?');
+            }
+
+            //解析Content-Length
             string header = _headers["content-length"];
             if (!string.IsNullOrEmpty(header))
             {
@@ -76,21 +85,26 @@ namespace IocpSharp.Http
                 }
             }
 
+            //获取Transfer-Encoding
             _transferEncoding = _headers["transfer-encoding"];
 
-            int idx = _url.IndexOf('?');
-            _path = _url;
-            if (idx >= 0)
+            //解析Content-Type
+            header = _headers["content-type"];
+            if (!string.IsNullOrEmpty(header))
             {
-                _path = _url.Substring(0, idx);
-                _query = _url.Substring(idx).TrimStart('?');
+                _contentType = HttpHeaderProperty.Parse(header);
             }
 
             return this;
         }
 
+        private HttpHeaderProperty _contentType = null;
         private long _contentLength = -1;
         private string _transferEncoding = null;
+
+        //multipart/form-data为文件上传
+        public string ContentType => _contentType == null ? null : _contentType.Value;
+        public string Boundary => _contentType == null ? null : _contentType["boundary"];
 
         #region QueryString相关参数和属性
 
@@ -357,6 +371,7 @@ namespace IocpSharp.Http
                 _headers = null;
                 _originHeaders = null;
                 _requestBody = null;
+                _contentType = null;
             }
         }
 

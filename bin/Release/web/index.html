@@ -1,0 +1,14 @@
+<html>
+	<head>
+		<title>Http-Server-Upload</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<form method="POST" action="/post?action=save" enctype="multipart/form-data" >
+		姓名：<input type=text name=name value="测试hello world!" /> <br />
+		年龄：<input type=text name=age value=31 /> <br />
+		头像：<input type=file name=image multiple /> <br />
+		<input type=submit value=提交 /> 
+		</form>
+	</body>
+</html>
