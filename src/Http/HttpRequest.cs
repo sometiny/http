@@ -177,8 +177,7 @@ namespace IocpSharp.Http
             if (!string.IsNullOrEmpty(_transferEncoding))
             {
                 //返回一个ChunkedReadStream
-                //我们暂不处理这种方式的数据
-                throw new NotSupportedException();
+                return _entityReadStream = new ChunkedReadStream(_baseStream, true);
             }
 
             //返回一个ContentedReadStream
