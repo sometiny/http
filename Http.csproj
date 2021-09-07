@@ -64,6 +64,7 @@
     <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
     <Compile Include="src\Http\Utils\BufferedAsyncReadResult.cs" />
     <Compile Include="src\Http\Utils\AsyncResult.cs" />
+    <Compile Include="src\Http\Utils\HttpMultipartFormDataParser.cs" />
     <Compile Include="src\Http\Utils\HttpRequestException.cs" />
     <Compile Include="src\Http\HttpResponser.cs" />
     <Compile Include="src\Http\HttpServer.cs" />

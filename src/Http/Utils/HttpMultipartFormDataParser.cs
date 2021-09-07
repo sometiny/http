@@ -8,6 +8,32 @@ using System.IO;
 
 namespace IocpSharp.Http.Utils
 {
+    public class FormItem
+    {
+        private string _name = null;
+        private string _value = null;
+        public string Name => _name;
+        public string Value => _value;
+        internal FormItem(string name, string value)
+        {
+            _name = name;
+            _value = value;
+        }
+    }
+    public class FileItem : FormItem
+    {
+        private string _fileName = null;
+        private string _contentType = null;
+
+        public string FileName => _fileName;
+        public string ContentType => _contentType;
+
+        internal FileItem(string name, string fileName, string contentType) : base(name, fileName)
+        {
+            _fileName = fileName;
+            _contentType = contentType;
+        }
+    }
     /// <summary>
     /// http文件上传内容解析
     /// </summary>
@@ -39,6 +65,14 @@ namespace IocpSharp.Http.Utils
         private NameValueCollection _forms = new NameValueCollection();
         private void ReadContent(Stream input, string boundary, byte[] lineBuffer)
         {
+            FormItem item = ReadContentHeader(input, lineBuffer);
+
+
+
+        }
+
+        private FormItem ReadContentHeader(Stream input, byte[] lineBuffer)
+        {
             string line;
             HttpHeaderProperty contentDisposition = null;
             string contentType = null;
@@ -47,12 +81,12 @@ namespace IocpSharp.Http.Utils
                 if (line == null) throw new Exception("连接断开，读取失败");
 
                 int idx = line.IndexOf(':');
-                if(idx <= 0) throw new Exception("标头错误");
+                if (idx <= 0) throw new Exception("标头错误");
 
                 string name = line.Substring(0, idx);
                 string value = line.Substring(idx + 1);
                 if (string.IsNullOrEmpty(value)) continue;
-                if(name == "Content-Disposition")
+                if (name == "Content-Disposition")
                 {
                     contentDisposition = HttpHeaderProperty.Parse(value);
                     continue;
@@ -62,18 +96,17 @@ namespace IocpSharp.Http.Utils
                     contentType = value;
                 }
             }
-            if (contentDisposition == null) return;
+            if (contentDisposition == null) return null;
             string formName = contentDisposition["name"];
             string fileName = contentDisposition["filename"];
-            if(fileName == null)
+            if (fileName == null)
             {
-                _forms[formName] = null;
+                return new FormItem(formName, null);
             }
             else
             {
-                _forms[formName] = fileName;
+                return new FileItem(formName, fileName, contentType);
             }
-
         }
 
         private string ReadLine(Stream stream, byte[] lineBuffer)
