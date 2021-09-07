@@ -129,6 +129,8 @@ namespace IocpSharp.Http
                 if (_requestBody != null) return _requestBody;
                 if (!HasEntityBody) return new byte[0];
 
+                if (_entityReadStream != null) throw new Exception("请求实体已被其他应用读取");
+
                 using (MemoryStream output = new MemoryStream())
                 {
                     using (Stream input = OpenRead())

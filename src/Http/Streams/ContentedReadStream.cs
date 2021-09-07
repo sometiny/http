@@ -67,7 +67,7 @@ namespace IocpSharp.Http.Streams
             _innerStream = null;
             base.Dispose(disposing);
         }
-        public override void Flush() { }
+        public override void Flush() => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long length) => throw new NotSupportedException();

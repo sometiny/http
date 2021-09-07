@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -57,6 +58,7 @@
     <Compile Include="src\Http\HttpRequest.cs" />
     <Compile Include="src\Http\HttpServerBase.cs" />
     <Compile Include="src\Http\Streams\BufferedNetworkStream.cs" />
+    <Compile Include="src\Http\Streams\ChunkedReadStream.cs" />
     <Compile Include="src\Http\Streams\ContentedWriteStream.cs" />
     <Compile Include="src\Http\Streams\ContentedReadStream.cs" />
     <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
