@@ -13,7 +13,7 @@ namespace IocpSharp.Http.Utils
         private string _name = null;
         private string _value = null;
         public string Name => _name;
-        public string Value => _value;
+        public string Value { get => _value; internal set => _value = value; }
         internal FormItem(string name, string value)
         {
             _name = name;
@@ -24,9 +24,13 @@ namespace IocpSharp.Http.Utils
     {
         private string _fileName = null;
         private string _contentType = null;
+        private long _fileSize = 0;
+        private string _tempFile = null;
 
         public string FileName => _fileName;
         public string ContentType => _contentType;
+        public long FileSize { get => _fileSize; internal set => _fileSize = value; }
+        internal string TempFile {  set => _tempFile = value; }
 
         internal FileItem(string name, string fileName, string contentType) : base(name, fileName)
         {
@@ -39,15 +43,15 @@ namespace IocpSharp.Http.Utils
     /// </summary>
     public class HttpMultipartFormDataParser
     {
-        private string _fileCacheAt = null;
+        private string _tempFileSaveAt = null;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="fileCacheAt">文件缓存目录</param>
-        public HttpMultipartFormDataParser(string fileCacheAt)
+        public HttpMultipartFormDataParser(string tempFileSaveAt)
         {
-            if (Directory.Exists(fileCacheAt)) throw new DirectoryNotFoundException($"上传文件缓存目录'{fileCacheAt}'不存在");
-            _fileCacheAt = fileCacheAt;
+            if (Directory.Exists(tempFileSaveAt)) throw new DirectoryNotFoundException($"上传文件缓存目录'{tempFileSaveAt}'不存在");
+            _tempFileSaveAt = tempFileSaveAt;
         }
         public void Parse(Stream input, string boundary) {
 
@@ -91,11 +95,9 @@ namespace IocpSharp.Http.Utils
                     contentDisposition = HttpHeaderProperty.Parse(value);
                     continue;
                 }
-                if (name == "Content-Type")
-                {
-                    contentType = value;
-                }
+                if (name == "Content-Type") contentType = value;
             }
+
             if (contentDisposition == null) return null;
             string formName = contentDisposition["name"];
             string fileName = contentDisposition["filename"];
@@ -108,7 +110,6 @@ namespace IocpSharp.Http.Utils
                 return new FileItem(formName, fileName, contentType);
             }
         }
-
         private string ReadLine(Stream stream, byte[] lineBuffer)
         {
             int offset = 0;
