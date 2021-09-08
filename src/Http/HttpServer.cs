@@ -20,6 +20,8 @@ namespace IocpSharp.Http
             //注册一些路由
             RegisterRoute("/", OnIndex);
             RegisterRoute("/post", OnReceivedPost);
+
+
         }
         /// <summary>
         /// 首页路由处理程序
@@ -68,13 +70,27 @@ namespace IocpSharp.Http
                 responser.Write(stream, $"&nbsp; &nbsp; {name} = {queryString[name]}<br />");
             }
 
-            //输出解析后的form表单数据
-            var form = request.Form;
-            responser.Write(stream, $"POST原值：{Encoding.UTF8.GetString(request.RequestBody)}<br />");
-            responser.Write(stream, $"POST解析结果：<br />");
-            foreach (string name in form.Keys)
+            responser.Write(stream, $"Boundary：{request.Boundary}<br />");
+
+
+            var parser = new HttpMultipartFormDataParser(AppDomain.CurrentDomain.BaseDirectory + "uploads");
+            parser.Parse(request.OpenRead(), request.Boundary);
+
+
+            var forms = parser.Forms;
+            var files = parser.Files;
+            responser.Write(stream, $"上传的表单：<br />");
+
+            foreach (string key in forms.Keys)
             {
-                responser.Write(stream, $"&nbsp; &nbsp; {name} = {form[name]}<br />");
+                responser.Write(stream, $"{key}：{forms[key]}<br />");
+            }
+
+            responser.Write(stream, $"上传的文件：<br />");
+
+            foreach (FileItem file in files)
+            {
+                responser.Write(stream, $"{file.Name}：{file.FileName}, {file.TempFile}<br />");
             }
 
             responser.End(stream);

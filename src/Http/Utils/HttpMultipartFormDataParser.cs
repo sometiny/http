@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using IocpSharp.Http.Streams;
 
 namespace IocpSharp.Http.Utils
 {
@@ -30,7 +31,7 @@ namespace IocpSharp.Http.Utils
         public string FileName => _fileName;
         public string ContentType => _contentType;
         public long FileSize { get => _fileSize; internal set => _fileSize = value; }
-        internal string TempFile {  set => _tempFile = value; }
+        public string TempFile { get => _tempFile; internal set => _tempFile = value; }
 
         internal FileItem(string name, string fileName, string contentType) : base(name, fileName)
         {
@@ -47,32 +48,74 @@ namespace IocpSharp.Http.Utils
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fileCacheAt">文件缓存目录</param>
+        /// <param name="tempFileSaveAt">文件缓存目录</param>
         public HttpMultipartFormDataParser(string tempFileSaveAt)
         {
-            if (Directory.Exists(tempFileSaveAt)) throw new DirectoryNotFoundException($"上传文件缓存目录'{tempFileSaveAt}'不存在");
+            if (!Directory.Exists(tempFileSaveAt)) throw new DirectoryNotFoundException($"上传文件缓存目录'{tempFileSaveAt}'不存在");
             _tempFileSaveAt = tempFileSaveAt;
         }
         public void Parse(Stream input, string boundary) {
 
             boundary = "--" + boundary;
 
-            byte [] lineBuffer = new byte[8192];
-            string line = ReadLine(input, lineBuffer);
+            using (MultipartReadStream output = new MultipartReadStream(boundary, input, false))
+            {
 
-            if(line != boundary) throw new Exception("boundary error, unformed");
+                byte[] lineBuffer = new byte[8192];
+                string line = ReadLine(output, lineBuffer);
 
-            ReadContent(input, boundary, lineBuffer);
+                if (line != boundary) throw new Exception("boundary error, unformed");
 
+                ReadContent(output, lineBuffer);
+            }
         }
 
         private NameValueCollection _forms = new NameValueCollection();
-        private void ReadContent(Stream input, string boundary, byte[] lineBuffer)
+        private List<FileItem> _files = new List<FileItem>();
+
+        public NameValueCollection Forms => _forms;
+        public List<FileItem> Files => _files;
+        private void ReadContent(MultipartReadStream input, byte[] lineBuffer)
         {
-            FormItem item = ReadContentHeader(input, lineBuffer);
+            try
+            {
+                while (true)
+                {
 
+                    FormItem item = ReadContentHeader(input, lineBuffer);
+                    input.BlockHeadRead = true;
+                    input.BlockEndingFound = false;
 
+                    if (item is FileItem fileItem)
+                    {
+                        string tempFile = Path.Combine(_tempFileSaveAt, Guid.NewGuid().ToString("D") + ".tmp");
+                        using(FileStream output = File.OpenWrite(tempFile))
+                        {
+                            input.CopyTo(output);
+                        }
+                        fileItem.TempFile = tempFile;
+                        _files.Add(fileItem);
+                    }
+                    else
+                    {
+                        using MemoryStream output = new MemoryStream();
+                        input.CopyTo(output);
+                        item.Value = Encoding.UTF8.GetString(output.ToArray());
+                        _forms.Add(item.Name, item.Value);
+                    }
 
+                    input.BlockHeadRead = false;
+                    string line = ReadLine(input, lineBuffer);
+                    if (line == null || line == "--")
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private FormItem ReadContentHeader(Stream input, byte[] lineBuffer)

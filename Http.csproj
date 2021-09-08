@@ -61,7 +61,9 @@
     <Compile Include="src\Http\Streams\ChunkedReadStream.cs" />
     <Compile Include="src\Http\Streams\ContentedWriteStream.cs" />
     <Compile Include="src\Http\Streams\ContentedReadStream.cs" />
+    <Compile Include="src\Http\Streams\MultipartReadStream.cs" />
     <Compile Include="src\Http\Utils\AsyncReadWriteResult.cs" />
+    <Compile Include="src\Http\Utils\BoyerMoore.cs" />
     <Compile Include="src\Http\Utils\BufferedAsyncReadResult.cs" />
     <Compile Include="src\Http\Utils\AsyncResult.cs" />
     <Compile Include="src\Http\Utils\HttpMultipartFormDataParser.cs" />
