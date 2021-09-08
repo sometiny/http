@@ -70,6 +70,7 @@ namespace IocpSharp.Http
                 responser.Write(stream, $"&nbsp; &nbsp; {name} = {queryString[name]}<br />");
             }
 
+            responser.Write(stream, $"ContentType：{request.ContentType}<br />");
             responser.Write(stream, $"Boundary：{request.Boundary}<br />");
 
 
@@ -83,14 +84,14 @@ namespace IocpSharp.Http
 
             foreach (string key in forms.Keys)
             {
-                responser.Write(stream, $"{key}：{forms[key]}<br />");
+                responser.Write(stream, $"&nbsp; &nbsp; {key}：{forms[key]}<br />");
             }
 
             responser.Write(stream, $"上传的文件：<br />");
 
             foreach (FileItem file in files)
             {
-                responser.Write(stream, $"{file.Name}：{file.FileName}, {file.TempFile}<br />");
+                responser.Write(stream, $"&nbsp; &nbsp; {file.Name}：{file.FileName}, {file.TempFile}<br />");
             }
 
             responser.End(stream);
