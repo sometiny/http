@@ -54,7 +54,8 @@ namespace IocpSharp.Http.Utils
             if (!Directory.Exists(tempFileSaveAt)) throw new DirectoryNotFoundException($"上传文件缓存目录'{tempFileSaveAt}'不存在");
             _tempFileSaveAt = tempFileSaveAt;
         }
-        public void Parse(Stream input, string boundary) {
+        public void Parse(Stream input, string boundary)
+        {
 
             boundary = "--" + boundary;
 
@@ -77,44 +78,38 @@ namespace IocpSharp.Http.Utils
         public List<FileItem> Files => _files;
         private void ReadContent(MultipartReadStream input, byte[] lineBuffer)
         {
-            try
+            while (true)
             {
-                while (true)
+
+                FormItem item = ReadContentHeader(input, lineBuffer);
+                if (item == null) throw new Exception("表单数据异常");
+                input.BlockHeadRead = true;
+                input.BlockEndingFound = false;
+
+                if (item is FileItem fileItem)
                 {
-
-                    FormItem item = ReadContentHeader(input, lineBuffer);
-                    input.BlockHeadRead = true;
-                    input.BlockEndingFound = false;
-
-                    if (item is FileItem fileItem)
+                    string tempFile = Path.Combine(_tempFileSaveAt, Guid.NewGuid().ToString("D") + ".tmp");
+                    using (FileStream output = File.OpenWrite(tempFile))
                     {
-                        string tempFile = Path.Combine(_tempFileSaveAt, Guid.NewGuid().ToString("D") + ".tmp");
-                        using(FileStream output = File.OpenWrite(tempFile))
-                        {
-                            input.CopyTo(output);
-                        }
-                        fileItem.TempFile = tempFile;
-                        _files.Add(fileItem);
-                    }
-                    else
-                    {
-                        using MemoryStream output = new MemoryStream();
                         input.CopyTo(output);
-                        item.Value = Encoding.UTF8.GetString(output.ToArray());
-                        _forms.Add(item.Name, item.Value);
                     }
-
-                    input.BlockHeadRead = false;
-                    string line = ReadLine(input, lineBuffer);
-                    if (line == null || line == "--")
-                    {
-                        break;
-                    }
+                    fileItem.TempFile = tempFile;
+                    _files.Add(fileItem);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                else
+                {
+                    using MemoryStream output = new MemoryStream();
+                    input.CopyTo(output);
+                    item.Value = Encoding.UTF8.GetString(output.ToArray());
+                    _forms.Add(item.Name, item.Value);
+                }
+
+                input.BlockHeadRead = false;
+                string line = ReadLine(input, lineBuffer);
+                if (line == null || line == "--")
+                {
+                    break;
+                }
             }
         }
 
