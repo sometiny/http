@@ -47,7 +47,7 @@ namespace IocpSharp.WebSocket
     /// <summary>
     /// 帧，WebSocket消息的基本单位
     /// </summary>
-    public class Frame
+    public class Frame : IDisposable
     {
         /// <summary>
         /// 当前帧是不是结束帧，如果不是，必须继续读下一个帧，直到读到结束帧。
@@ -86,12 +86,96 @@ namespace IocpSharp.WebSocket
         /// </summary>
         public byte[] MaskKey { get; set; } = null;
 
+        private Stream _writeStream = null;
+        private Stream _readStream = null;
+
         /// <summary>
-        /// 掩码在MaskKey内的索引，掩码一定是最后四个字节
+        /// 打开一个流，用于向基础里写入Payload
+        /// 可以防止重复打开
         /// </summary>
-        public int MaskKeyOffset { get; set; } = 0;
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public virtual Stream OpenWrite(Stream stream)
+        {
+            if (_writeStream != null) return _writeStream;
 
+            //先把元数据写入基础流
+            var meta = CreateMetaBytes();
+            stream.Write(meta, 0, meta.Length);
+            return _writeStream = new FrameWriteStream(MaskKey, PayloadLength, stream, true);
+        }
+        /// <summary>
+        /// 打开一个流，用于从基础里读取Payload
+        /// 可以防止重复打开
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public virtual Stream OpenRead(Stream stream)
+        {
+            if (_readStream != null) return _readStream;
+            return _readStream = new FrameReadStream(MaskKey, PayloadLength, stream, true);
+        }
 
+        private byte[] CreateMetaBytes() {
+
+            long payloadLength = PayloadLength;
+            //跟读返回则来就好了
+            int metaLength = 2;
+
+            //长度大于0xffff，使用long型数据保存
+            //长度大于等于126，使用short型数据保存
+            //长度小于126，长度直接保存在第二个字节的后7位，不需要额外的字节。
+            if (payloadLength > 0xffff) metaLength += 8;
+            else if (payloadLength >= 126) metaLength += 2;
+
+            //如果有掩码，再加4个字节
+            if (Mask) metaLength += 4;
+
+            byte[] meta = new byte[metaLength];
+
+            //第一个字节第一位
+            meta[0] |= (byte)(Fin ? 0x80 : 0);
+
+            //第一个字节，后4位
+            meta[0] |= (byte)OpCode;
+
+            //第二个字节第一位
+            meta[1] |= (byte)(Mask ? 0x80 : 0);
+
+            //长度大于0xffff，使用long型数据保存
+            //长度大于等于126，使用short型数据保存
+            //长度小于126，长度直接保存在第二个字节的后7位
+            if (payloadLength > 0xffff)
+            {
+                meta[1] |= 127;
+                meta[2] = (byte)(payloadLength >> 56 & 0xff);
+                meta[3] = (byte)(payloadLength >> 48 & 0xff);
+                meta[4] = (byte)(payloadLength >> 40 & 0xff);
+                meta[5] = (byte)(payloadLength >> 32 & 0xff);
+                meta[6] = (byte)(payloadLength >> 24 & 0xff);
+                meta[7] = (byte)(payloadLength >> 16 & 0xff);
+                meta[8] = (byte)(payloadLength >> 8 & 0xff);
+                meta[9] = (byte)(payloadLength & 0xff);
+            }
+            else if (payloadLength >= 126)
+            {
+                meta[1] |= 126;
+                meta[2] = (byte)(payloadLength >> 8 & 0xff);
+                meta[3] = (byte)(payloadLength & 0xff);
+            }
+            else meta[1] |= (byte)(payloadLength & 0xff);
+
+            if (!Mask)
+            {
+                return meta;
+            }
+
+            //如果有Mask，生成随机MaskKey，保存到最后4个字节
+            MaskKey = RandomBytes();
+            MaskKey.CopyTo(meta, meta.Length - 4);
+
+            return meta;
+        }
 
         public static Frame NextFrame(Stream baseStream)
         {
@@ -177,6 +261,28 @@ namespace IocpSharp.WebSocket
             return frame;
         }
 
+        ~Frame()
+        {
+            Dispose(false);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                MaskKey = null;
+            }
+            _writeStream?.Dispose();
+            _readStream?.Dispose();
+            _writeStream = null;
+            _readStream = null;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         /// 从流中读取指定长度的数据到缓冲区
         /// </summary>
@@ -208,6 +314,20 @@ namespace IocpSharp.WebSocket
             int num4 = (((buffer[4] << 0x18) | (buffer[5] << 0x10)) | (buffer[6] << 8)) | buffer[7];
             return (((long)((ulong)num4)) | (num3 << 0x20));
 
+        }
+        /// <summary>
+        /// 生成随即字节
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static byte[] RandomBytes(int length = 4)
+        {
+            using (System.Security.Cryptography.RNGCryptoServiceProvider rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+            {
+                byte[] data = new byte[length];
+                rng.GetBytes(data);
+                return data;
+            }
         }
     }
 }

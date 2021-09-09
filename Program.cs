@@ -11,7 +11,6 @@ namespace IocpSharp.Http
         static void Main(string[] args)
         {
             HttpServer server = new HttpServer();
-
             try
             {
                 server.Start("0.0.0.0", 4189);
