@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="renderer" content="webkit">
+</head>
+
+<body>
+  <button onclick="connect()">开始</button>
+  <div id="messages" style="font-size: 12px;"></div>
+  <script>
+    function appendMessage(message, color) {
+      var el = document.createElement('div');
+      el.innerHTML = message
+      el.style.color = color;
+      document.getElementById('messages').appendChild(el);
+      return el;
+    }
+    function appendError(message) {
+      return appendMessage(message, 'red');
+    }
+    function appendWarning(message) {
+      return appendMessage(message, 'orange');
+    }
+    let socketClosed = true;
+
+    function sendMessage(websocket) {
+      var message = JSON.stringify({ message: "i'm anlige;", 'timestamp': ((+new Date()) / 1000).toFixed(0) });
+      var el = appendMessage("&gt; " + message, '#666');
+      websocket.send(message);
+    }
+
+    function connect() {
+      if (!socketClosed) {
+        return;
+      }
+      var messageReceived = 0;
+      document.getElementById('messages').innerHTML = '';
+
+      const webSocket = new WebSocket('ws://127.0.0.1:4189/');
+      webSocket.onopen = function () {
+        appendMessage('connection opened', 'green');
+        socketClosed = false;
+        sendMessage(webSocket);
+      }
+
+      webSocket.onmessage = function (message) {
+        var el = appendMessage("&lt; " + message.data, '#333');
+        el.style.marginBottom = '5px';
+        messageReceived++;
+        if (messageReceived >= 5) {
+          webSocket.close();
+          return;
+        }
+        window.setTimeout(function () {
+          sendMessage(webSocket);
+        }, 1000);
+      };
+
+
+      webSocket.onclose = function (code, reason) {
+        appendWarning('connection closed');
+        socketClosed = true;
+      }
+
+      webSocket.onerror = function (ex) {
+        appendError(ex.message);
+        socketClosed = true;
+      }
+    }
+    connect();
+  </script>
+</body>
+
+</html>

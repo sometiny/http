@@ -101,6 +101,23 @@ namespace IocpSharp.Http
         private HttpHeaderProperty _contentType = null;
         private long _contentLength = -1;
         private string _transferEncoding = null;
+        
+        /// <summary>
+        /// 判断请求是不是WebSocket请求
+        /// </summary>
+        public bool IsWebSocket
+        {
+            get
+            {
+
+                string connection = _headers["connection"];
+                string upgrade = _headers["Upgrade"];
+                return !string.IsNullOrEmpty(connection) 
+                    && connection.ToLower() == "upgrade" 
+                    && !string.IsNullOrEmpty(upgrade) 
+                    && upgrade.ToLower() == "websocket";
+            }
+        }
 
         //multipart/form-data为文件上传
         public bool IsUpload => _contentType != null && _contentType.Value == "multipart/form-data" && !string.IsNullOrEmpty(_contentType["boundary"]);

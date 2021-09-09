@@ -10,6 +10,7 @@ using IocpSharp.Http.Streams;
 using System.IO.Compression;
 using IocpSharp.Server;
 using IocpSharp.Http.Utils;
+using IocpSharp.WebSocket;
 
 namespace IocpSharp.Http
 {
@@ -56,6 +57,17 @@ namespace IocpSharp.Http
                 {
                     //捕获一个HttpRequest
                     request = HttpRequest.Capture(stream);
+
+                    ///如果是WebSocket，调用相应的处理方法
+                    if (request.IsWebSocket)
+                    {
+                        if(!OnWebSocketInternal(request, stream))
+                        {
+                            //WebSocket处理异常，关闭基础流
+                            stream.Close();
+                        }
+                        return;
+                    }
 
                     //尝试查找路由，不存在的话使用NotFound路由
                     if (!_routes.TryGetValue(request.Path, out Func<HttpRequest, Stream, bool> handler))
@@ -191,5 +203,53 @@ namespace IocpSharp.Http
             return true;
         }
 
+        /// <summary>
+        /// 处理WebSocket
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        private bool OnWebSocketInternal(HttpRequest request, Stream stream)
+        {
+            string webSocketKey = request.Headers["Sec-WebSocket-Key"];
+            if(string.IsNullOrEmpty(webSocketKey))
+            {
+                OnBadRequest(stream, "header 'Sec-WebSocket-Key' error");
+                return false;
+            }
+
+            //获取客户端发送来的Sec-WebSocket-Key字节数组
+            byte[] keyBytes = Encoding.ASCII.GetBytes(webSocketKey);
+
+            //拼接上WebSocket的Salt，固定值：258EAFA5-E914-47DA-95CA-C5AB0DC85B11
+            keyBytes = keyBytes.Concat(ProtocolUtils.Salt).ToArray();
+
+            //计算HASH值，作为响应给客户端的Sec-WebSocket-Accept
+            string secWebSocketAcceptKey = ProtocolUtils.SHA1(keyBytes);
+
+            //响应101状态码给客户端
+            HttpResponser responser = new HttpResponser(101);
+            responser["Upgrade"] = "websocket";
+            responser["Connection"] = "Upgrade";
+
+            //设置Sec-WebSocket-Accept头
+            responser["Sec-WebSocket-Accept"] = secWebSocketAcceptKey;
+
+            //发送响应
+            responser.WriteHeader(stream);
+
+            //开始WebSocket消息的接收和发送
+            OnWebSocket(request, stream);
+            return true;
+        }
+
+        /// <summary>
+        /// WebSocket消息处理程序
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="stream"></param>
+        protected virtual void OnWebSocket(HttpRequest request, Stream stream) {
+            stream.Close();
+        }
     }
 }

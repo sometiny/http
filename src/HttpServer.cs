@@ -13,16 +13,16 @@ using IocpSharp.Http.Utils;
 
 namespace IocpSharp.Http
 {
-    public class HttpServer : TcpIocpServer
+    public class HttpServer : HttpServerBase
     {
         public HttpServer() : base()
         {
+            //设置根目录
+            WebRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
         }
-
-        protected override void NewClient(Socket client)
+        protected override void OnWebSocket(HttpRequest request, Stream stream)
         {
-            BufferedNetworkStream baseStream = new BufferedNetworkStream(client, true);
-            HttpRequest request = HttpRequest.Capture(baseStream);
+            base.OnWebSocket(request, stream);
         }
     }
 }
