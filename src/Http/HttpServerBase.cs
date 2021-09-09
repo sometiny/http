@@ -19,8 +19,10 @@ namespace IocpSharp.Http
         private static int MaxRequestPerConnection = 20;
 
         private string _webRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
+        private string _uplaodTempDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads"));
 
         public string WebRoot { get => _webRoot; set => _webRoot = value; }
+        public string UplaodTempDir { get => _uplaodTempDir; set => _uplaodTempDir = value; }
 
         //后面的代码可能会越来越复杂，我们做个简单的路由功能
         //可以开发功能更强大的路由

@@ -17,11 +17,13 @@ namespace IocpSharp.Http
     {
         public HttpServer() : base()
         {
+            //设置Web根目录
+            //方便输出静态文件
+            WebRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
+            UplaodTempDir = AppDomain.CurrentDomain.BaseDirectory + "uploads";
             //注册一些路由
             RegisterRoute("/", OnIndex);
             RegisterRoute("/post", OnReceivedPost);
-
-
         }
         /// <summary>
         /// 首页路由处理程序
@@ -74,7 +76,7 @@ namespace IocpSharp.Http
             responser.Write(stream, $"Boundary：{request.Boundary}<br />");
 
 
-            var parser = new HttpMultipartFormDataParser(AppDomain.CurrentDomain.BaseDirectory + "uploads");
+            var parser = new HttpMultipartFormDataParser(UplaodTempDir);
             parser.Parse(request.OpenRead(), request.Boundary);
 
 

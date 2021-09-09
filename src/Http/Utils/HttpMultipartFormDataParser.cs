@@ -88,13 +88,22 @@ namespace IocpSharp.Http.Utils
 
                 if (item is FileItem fileItem)
                 {
-                    string tempFile = Path.Combine(_tempFileSaveAt, Guid.NewGuid().ToString("D") + ".tmp");
-                    using (FileStream output = File.OpenWrite(tempFile))
+                    if (string.IsNullOrEmpty(fileItem.FileName))
                     {
+
+                        using MemoryStream output = new MemoryStream();
                         input.CopyTo(output);
                     }
-                    fileItem.TempFile = tempFile;
-                    _files.Add(fileItem);
+                    else
+                    {
+                        string tempFile = Path.Combine(_tempFileSaveAt, Guid.NewGuid().ToString("D") + ".tmp");
+                        using (FileStream output = File.OpenWrite(tempFile))
+                        {
+                            input.CopyTo(output);
+                        }
+                        fileItem.TempFile = tempFile;
+                        _files.Add(fileItem);
+                    }
                 }
                 else
                 {
