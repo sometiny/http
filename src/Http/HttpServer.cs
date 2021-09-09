@@ -50,51 +50,28 @@ namespace IocpSharp.Http
         /// <returns></returns>
         private bool OnReceivedPost(HttpRequest request, Stream stream)
         {
-            //展示下客户端请求的一些东西
             HttpResponser responser = new ChunkedResponser();
 
             responser.ContentType = "text/html; charset=utf-8";
-
-            responser.Write(stream, "<style type=\"text/css\">body{font-size:14px;}</style>");
-            responser.Write(stream, "<h4>Hello World!</h4>");
+            responser.Write(stream, "<style type=\"text/css\">body{font-size:12px;}</style>");
+            responser.Write(stream, "<h4>上传表单演示</h4>");
             responser.Write(stream, $"<a href=\"/index.html\">返回</a><br />");
-            responser.Write(stream, $"Host Name: {request.Headers["host"]} <br />");
-            responser.Write(stream, $"Method: {request.Method} <br />");
-            responser.Write(stream, $"Request Url: {request.Url} <br />");
-            responser.Write(stream, $"HttpPrototol: {request.HttpProtocol} <br />");
-            responser.Write(stream, $"Time Now: {DateTime.Now: yyyy-MM-dd HH:mm:ss} <br /><br />");
-
-            //输出解析后的查询字符串数据
-            responser.Write(stream, $"查询参数解析结果：<br />");
-            var queryString = request.QueryString;
-            foreach (string name in queryString.Keys)
-            {
-                responser.Write(stream, $"&nbsp; &nbsp; {name} = {queryString[name]}<br />");
-            }
 
             responser.Write(stream, $"ContentType：{request.ContentType}<br />");
             responser.Write(stream, $"Boundary：{request.Boundary}<br />");
 
-
-            var parser = new HttpMultipartFormDataParser(UplaodTempDir);
-            parser.Parse(request.OpenRead(), request.Boundary);
-
-
-            var forms = parser.Forms;
-            var files = parser.Files;
-            responser.Write(stream, $"上传的表单：<br />");
-
-            foreach (string key in forms.Keys)
+            foreach (string formName in request.Form.Keys)
             {
-                responser.Write(stream, $"&nbsp; &nbsp; {key}：{forms[key]}<br />");
+                responser.Write(stream, $"{formName}: {request.Form[formName]}<br />");
             }
 
-            responser.Write(stream, $"上传的文件：<br />");
-
-            foreach (FileItem file in files)
+            foreach (FileItem file in request.Files)
             {
-                responser.Write(stream, $"&nbsp; &nbsp; {file.Name}：{file.FileName}, {file.TempFile}<br />");
+                responser.Write(stream, $"{file.Name}: {file.FileName}, {file.TempFile}<br />");
             }
+
+            //responser.Write(stream, $"<pre style=\"font-family:'microsoft yahei',arial; color: green\">{Encoding.UTF8.GetString( request.RequestBody)}</pre>");
+
 
             responser.End(stream);
 

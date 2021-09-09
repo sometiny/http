@@ -31,7 +31,7 @@ namespace IocpSharp.Http.Utils
         public static HttpHeaderProperty Parse(string value)
         {
             int idx = value.IndexOf(';');
-            if (idx == 0)
+            if (idx < 0)
             {
                 return new HttpHeaderProperty() { _value = value.Trim() };
             }

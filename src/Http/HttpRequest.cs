@@ -27,8 +27,8 @@ namespace IocpSharp.Http
         public NameValueCollection Headers => _headers;
 
 
-        internal HttpRequest(Stream baseStream) { 
-            _baseStream = baseStream; 
+        internal HttpRequest(Stream baseStream) {
+            _baseStream = baseStream;
         }
         public HttpRequest(string url, string method = "GET", string httpProtocol = "HTTP/1.1")
         {
@@ -63,7 +63,7 @@ namespace IocpSharp.Http
         /// 可以在Ready方法里面做更多事情
         /// 例如解析Host、ContentLength、ContentType、AcceptEncoding、Connection以及Range等请求头
         /// </summary>
-        public HttpRequest Ready()
+        protected virtual HttpRequest Ready()
         {
             _originHeaders += "\r\n";
 
@@ -93,6 +93,7 @@ namespace IocpSharp.Http
             if (!string.IsNullOrEmpty(header))
             {
                 _contentType = HttpHeaderProperty.Parse(header);
+                ParseRequestContent();
             }
 
             return this;
@@ -103,8 +104,56 @@ namespace IocpSharp.Http
         private string _transferEncoding = null;
 
         //multipart/form-data为文件上传
+        public bool IsUpload => _contentType != null && _contentType.Value == "multipart/form-data" && !string.IsNullOrEmpty(_contentType["boundary"]);
         public string ContentType => _contentType == null ? null : _contentType.Value;
         public string Boundary => _contentType == null ? null : _contentType["boundary"];
+
+        private List<FileItem> _files = null;
+
+        public List<FileItem> Files
+        {
+            get
+            {
+                if (!IsUpload) return null;
+                if(_files == null) ReadUploadContent();
+                return _files;
+            }
+        }
+
+        private void ParseRequestContent()
+        {
+            //有文件上传，自动解析
+            if (IsUpload)
+            {
+                if (!HttpServerBase.AutoParseUpload) return;
+                ReadUploadContent();
+                return;
+            }
+
+            if (HasEntityBody) ReadRequestBody();
+            else _requestBody = new byte[0];
+
+        }
+
+        private void ReadUploadContent()
+        {
+            var parser = new HttpMultipartFormDataParser(HttpServerBase.UplaodTempDir);
+            using Stream input = OpenRead();
+            parser.Parse(input, Boundary);
+            _form = parser.Forms;
+            _files = parser.Files;
+        }
+
+        private void ReadRequestBody()
+        {
+
+            using MemoryStream output = new MemoryStream();
+            using (Stream input = OpenRead())
+            {
+                input.CopyTo(output);
+            }
+            _requestBody = output.ToArray();
+        }
 
         #region QueryString相关参数和属性
 
@@ -141,19 +190,9 @@ namespace IocpSharp.Http
             get
             {
                 if (_requestBody != null) return _requestBody;
-                if (!HasEntityBody) return new byte[0];
-
-                if (_entityReadStream != null) throw new Exception("请求实体已被其他应用读取");
-
-                using (MemoryStream output = new MemoryStream())
-                {
-                    using (Stream input = OpenRead())
-                    {
-                        input.CopyTo(output);
-                    }
-                    return _requestBody = output.ToArray();
-                }
-
+                if (!HasEntityBody) return _requestBody = new byte[0];
+                ReadRequestBody();
+                return _requestBody;
             }
         }
         public NameValueCollection Form
@@ -162,6 +201,12 @@ namespace IocpSharp.Http
             {
                 //在获取属性值时才初始化_form的值
                 if (_form != null) return _form;
+
+                if(IsUpload && _files == null)
+                {
+                    ReadUploadContent();
+                    return _form;
+                }
 
                 return _form = HttpUtility.ParseUriComponents(Encoding.UTF8.GetString(RequestBody));
             }
