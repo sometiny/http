@@ -93,7 +93,6 @@ namespace IocpSharp.Http
             if (!string.IsNullOrEmpty(header))
             {
                 _contentType = HttpHeaderProperty.Parse(header);
-                ParseRequestContent();
             }
 
             return this;
@@ -110,29 +109,17 @@ namespace IocpSharp.Http
 
         private List<FileItem> _files = null;
 
+        /// <summary>
+        /// 获取上传文件的列表
+        /// </summary>
         public List<FileItem> Files
         {
             get
             {
-                if (!IsUpload) return null;
+                if (!IsUpload) return _files = new List<FileItem>();
                 if(_files == null) ReadUploadContent();
                 return _files;
             }
-        }
-
-        private void ParseRequestContent()
-        {
-            //有文件上传，自动解析
-            if (IsUpload)
-            {
-                if (!HttpServerBase.AutoParseUpload) return;
-                ReadUploadContent();
-                return;
-            }
-
-            if (HasEntityBody) ReadRequestBody();
-            else _requestBody = new byte[0];
-
         }
 
         private void ReadUploadContent()
@@ -195,6 +182,10 @@ namespace IocpSharp.Http
                 return _requestBody;
             }
         }
+
+        /// <summary>
+        /// 获取表单数据
+        /// </summary>
         public NameValueCollection Form
         {
             get

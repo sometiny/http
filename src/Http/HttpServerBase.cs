@@ -17,13 +17,11 @@ namespace IocpSharp.Http
     public class HttpServerBase : TcpIocpServer
     {
         private static int MaxRequestPerConnection = 20;
-        private static bool _autoParseUpload = false;
 
         private string _webRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
         private static string _uplaodTempDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads"));
 
         public string WebRoot { get => _webRoot; set => _webRoot = value; }
-        public static bool AutoParseUpload { get => _autoParseUpload; set => _autoParseUpload = value; }
         public static string UplaodTempDir { get => _uplaodTempDir; set => _uplaodTempDir = value; }
 
         //后面的代码可能会越来越复杂，我们做个简单的路由功能
