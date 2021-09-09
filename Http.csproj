@@ -77,6 +77,7 @@
     <Compile Include="src\Http\Utils\HttpHeaderProperty.cs" />
     <Compile Include="src\Http\Utils\HttpUtility.cs" />
     <Compile Include="src\Http\Utils\MimeTypes.cs" />
+    <Compile Include="src\WebSocket\Frame.cs" />
     <Compile Include="src\WebSocket\ProtocolUtils.cs" />
   </ItemGroup>
   <ItemGroup>
