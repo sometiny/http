@@ -84,7 +84,7 @@ namespace IocpSharp.WebSocket
         /// <summary>
         /// 标识Payload长度的字节+掩码（4字节，如果有的话）
         /// </summary>
-        public byte[] MaskKey { get; set; }
+        public byte[] MaskKey { get; set; } = null;
 
         /// <summary>
         /// 掩码在MaskKey内的索引，掩码一定是最后四个字节
@@ -124,32 +124,42 @@ namespace IocpSharp.WebSocket
             {
                 frame.PayloadLength = payloadLengthMask;
             }
+            //126代表紧跟着的2个字节保存了Payload长度
             else if (payloadLengthMask == 126)
             {
                 frame.PayloadLengthBytesCount = 2;
 
             }
+            //126代表紧跟着的8个字节保存了Payload长度，对，就是没有4个字节。
             else if (payloadLengthMask == 127)
             {
                 frame.PayloadLengthBytesCount = 8;
 
             }
 
-            //如果没有掩码,并且不需要额外的字节去确定Payload长度，直接返回，不需要继续读取元数据了
+            //如果没有掩码,并且不需要额外的字节去确定Payload长度，直接返回
             //后面只要根据PayloadLength去读Payload即可
             if (!frame.Mask && frame.PayloadLengthBytesCount == 0)
             {
                 return frame;
             }
 
+            //把保存长度的2或8字节读出来即可
+            //如果有掩码，需要继续读4个字节的掩码
+            buffer = frame.Mask 
+                ? new byte[frame.PayloadLengthBytesCount + 4] 
+                : new byte[frame.PayloadLengthBytesCount];
 
-            buffer = frame.Mask ? new byte[frame.PayloadLengthBytesCount + 4] : new byte[frame.PayloadLengthBytesCount];
-
+            //读取Payload长度数据和掩码（如果有的话）
             ReadPackage(baseStream, buffer, 0, buffer.Length);
 
-            frame.MaskKeyOffset = frame.PayloadLengthBytesCount;
-            frame.MaskKey = buffer;
+            //如果有掩码，提取出来
+            if (frame.Mask)
+            {
+                frame.MaskKey = buffer.Skip(frame.PayloadLengthBytesCount).Take(4).ToArray();
+            }
 
+            //从字节数据中，获取Payload的长度
             if (frame.PayloadLengthBytesCount == 2)
             {
                 frame.PayloadLength = buffer[0] << 8 | buffer[1];
@@ -160,6 +170,9 @@ namespace IocpSharp.WebSocket
                 frame.PayloadLength = ToInt64(buffer);
             }
 
+            //至此所有表示帧元信息的数据都被读出来
+            //Payload的数据我们会用流的方式读出来
+            //有些特殊帧，再Payload还会有特定的数据格式，后面单独介绍
 
             return frame;
         }
