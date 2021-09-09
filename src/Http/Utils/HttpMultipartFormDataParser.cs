@@ -172,7 +172,7 @@ namespace IocpSharp.Http.Utils
                     if (offset == 1)
                         return "";
 
-                    return Encoding.ASCII.GetString(lineBuffer, 0, offset - 1);
+                    return Encoding.UTF8.GetString(lineBuffer, 0, offset - 1);
                 }
                 offset++;
                 if (offset >= lineBuffer.Length)

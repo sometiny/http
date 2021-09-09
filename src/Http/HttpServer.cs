@@ -60,18 +60,24 @@ namespace IocpSharp.Http
             responser.Write(stream, $"ContentType：{request.ContentType}<br />");
             responser.Write(stream, $"Boundary：{request.Boundary}<br />");
 
+
+            #region 输出解析后的上传内容
+            responser.Write(stream, $"<h5>上传表单数据：</h5>");
             foreach (string formName in request.Form.Keys)
             {
                 responser.Write(stream, $"{formName}: {request.Form[formName]}<br />");
             }
 
+            responser.Write(stream, $"<h5>上传文件列表：</h5>");
             foreach (FileItem file in request.Files)
             {
                 responser.Write(stream, $"{file.Name}: {file.FileName}, {file.TempFile}<br />");
             }
+            #endregion
 
+            #region 输出解析前的上传内容，不能同时与上面代码块运行
             //responser.Write(stream, $"<pre style=\"font-family:'microsoft yahei',arial; color: green\">{Encoding.UTF8.GetString( request.RequestBody)}</pre>");
-
+            #endregion
 
             responser.End(stream);
 
