@@ -60,6 +60,12 @@ namespace IocpSharp.WebSocket
         protected virtual void OnText(string payload) {}
 
         /// <summary>
+        /// 接收帧，不建议在重载方法中写收发逻辑，仅调试用。
+        /// </summary>
+        /// <param name="frame">帧</param>
+        protected virtual void OnNewFrame(Frame frame) { }
+
+        /// <summary>
         /// 接收到二进制消息
         /// </summary>
         /// <param name="inputStream">二进制输入流</param>
@@ -167,7 +173,7 @@ namespace IocpSharp.WebSocket
                     OnDisconnected();
                     return;
                 }
-
+                OnNewFrame(frame);
                 //读出所有Payload
                 byte[] payload = null;
                 if (frame.OpCode != OpCode.Binary)

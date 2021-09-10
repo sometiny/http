@@ -47,25 +47,33 @@ namespace IocpSharp.Http
         {
             Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 连接断开：{_remoteEndPoint}");
         }
+        protected override void OnNewFrame(Frame frame)
+        {
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到新帧；帧类型：{frame.OpCode}，结束帧：{frame.Fin}，携带掩码：{frame.Mask}，长度：{frame.PayloadLength}");
+        }
 
         protected override void OnText(string payload)
         {
-            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到文本数据：{payload}");
-            Send($"服务器接收到文本数据：{payload}");
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 文本数据：{payload}");
             if(payload == "close")
             {
+                Send($"服务器接收到close指令，关闭连接。");
                 Close();
+                return;
             }
             if (payload == "ping")
             {
+                Send($"服务器接收到ping指令，发送ping。");
                 Ping();
+                return;
             }
+            Send($"服务器接收到文本数据：{payload}");
         }
 
         protected override void OnBinary(Stream inputStream)
         {
             byte[] payload = StreamUtils.ReadAllBytes(inputStream);
-            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到二进制数据，长度：{payload.Length}");
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 二进制数据，长度：{payload.Length}");
             Send($"服务器接收到二进制数据，长度：{payload.Length}");
         }
     }

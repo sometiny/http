@@ -8,25 +8,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <meta name="renderer" content="webkit">
   <style type="text/css">
-    .red {
-      color: red
-    }
-
-    .green {
-      color: green
-    }
-
-    .gray {
-      color: gray
-    }
-
-    .gray-333 {
-      color: #333
-    }
-
-    .gray-666 {
-      color: #666
-    }
+    .red { color: red }
+    .green { color: green }
+    .gray { color: gray  }
+    .gray-333 { color: #333 }
+    .gray-666 { color: #666 }
+    .gray-999 { color: #999 }
   </style>
   <!--刚好前面我们HTTP测试的时候保留了个vue.js，用起来-->
   <script src="/vue.js"></script>
@@ -63,7 +50,7 @@
       methods: {
         appendMessage(text, className) {
           className = className || '';
-          this.messages.push({ text, className });
+          this.messages.unshift({ text, className });
         },
         disconnect() {
           this.socket.close();
@@ -98,8 +85,8 @@
           };
 
 
-          webSocket.onclose = function (code, reason) {
-            that.appendMessage('connection closed', 'red');
+          webSocket.onclose = function (ev) {
+            that.appendMessage(`connection closed, code: ${ev.code}, reason: ${ev.reason}`, 'red');
             that.status = 0;
           }
 

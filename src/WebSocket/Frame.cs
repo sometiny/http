@@ -75,17 +75,17 @@ namespace IocpSharp.WebSocket
         /// <summary>
         /// 标识Payload长度的字节数，只可能是这三个值：0、2、8
         /// </summary>
-        public int PayloadLengthBytesCount { get; set; } = 0;
+        private int PayloadLengthBytesCount { get; set; } = 0;
 
         /// <summary>
         /// Payload长度
         /// </summary>
-        public long PayloadLength { get; set; } = 0;
+        public long PayloadLength { get; internal set; } = 0;
 
         /// <summary>
         /// 标识Payload长度的字节+掩码（4字节，如果有的话）
         /// </summary>
-        public byte[] MaskKey { get; set; } = null;
+        public byte[] MaskKey { get; internal set; } = null;
 
         private Stream _writeStream = null;
         private Stream _readStream = null;
