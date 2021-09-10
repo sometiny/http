@@ -41,7 +41,7 @@ namespace IocpSharp.Http
 
         protected override void OnConnected()
         {
-            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 新客户端连接：{_remoteEndPoint}"  );
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 新客户端连接：{_remoteEndPoint}");
         }
         protected override void OnDisconnected()
         {
@@ -49,7 +49,10 @@ namespace IocpSharp.Http
         }
         protected override void OnNewFrame(Frame frame)
         {
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到新帧；帧类型：{frame.OpCode}，结束帧：{frame.Fin}，携带掩码：{frame.Mask}，长度：{frame.PayloadLength}");
+            Console.ForegroundColor = color;
         }
 
         protected override void OnText(string payload)
