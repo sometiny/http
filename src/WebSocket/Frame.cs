@@ -19,12 +19,12 @@ namespace IocpSharp.WebSocket
         Continuation = 0,
 
         /// <summary>
-        /// 文本帧
+        /// 数据帧：文本帧
         /// </summary>
         Text = 1,
 
         /// <summary>
-        /// 二进制帧
+        /// 数据帧：二进制帧
         /// </summary>
         Binary = 2,
 

@@ -38,6 +38,7 @@ namespace IocpSharp.Http
                 }
                 Console.WriteLine($"帧类型：{frame.OpCode}，是否有掩码：{frame.Mask}，帧长度：{frame.PayloadLength}");
 
+                //读出所有Payload
                 byte[] payload = null;
                 using (Stream input = Frame.OpenRead(frame, stream))
                 {

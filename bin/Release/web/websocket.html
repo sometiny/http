@@ -38,9 +38,9 @@
     <button v-else-if="status=== 1">连接中...</button>
     <div v-else>
       <textarea cols="80" rows="5" v-model="message"></textarea><br />
-      <button @click="sendMessage">发送</button>
+      <button @click="sendMessage">文本模式发送</button>
       <button @click="sendMessageBinary">二进制模式发送</button>
-      <button @click="disconnect">断开</button>
+      <button @click="disconnect">断开连接</button>
     </div>
 
     <div style="font-size: 12px;">
