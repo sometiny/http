@@ -69,10 +69,12 @@
           this.socket.close();
         },
         sendMessage() {
+          if (!this.message) return;
           this.appendMessage("> " + this.message, 'gray-999');
           this.socket.send(this.message);
         },
         sendMessageBinary() {
+          if (!this.message) return;
           this.appendMessage("> " + this.message, 'gray-999');
           this.socket.send(new Blob([this.message]));
         },

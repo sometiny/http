@@ -87,7 +87,7 @@ namespace IocpSharp.Http
                 {
                     Console.WriteLine(string.Join(", ", payload));
 
-                    //为了测试，我们随便发送测试内容给客户端
+                    //为了测试，我们发送测试内容给客户端
                     TextFrame response = new TextFrame($"服务器收到二进制数据，长度：{payload.Length}");
                     response.OpenWrite(stream);
                     continue;
