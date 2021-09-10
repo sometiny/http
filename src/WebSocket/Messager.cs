@@ -144,7 +144,7 @@ namespace IocpSharp.WebSocket
             if (code > 1000 || _closeFrameSent) return;
 
             _closeFrameSent = true;
-            CloseFrame response = new CloseFrame(code, reason);
+            CloseFrame response = new CloseFrame(code == 0 ? 1000 : code, code == 0 ? "established fulfilled" : reason);
             response.OpenWrite(_baseStream);
         }
 
