@@ -13,3 +13,4 @@
 |07、demo/KeepAliveTest.cs|在一个连接中处理多个HTTP请求|
 |08、demo/HttpServerUpload.cs|处理HTTP上传|
 |09、demo/WebSocketTest.cs|WebSocket测试|
+|10、demo/WebSocketMessager.cs|WebSocket封装Messager|
