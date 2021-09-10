@@ -56,6 +56,10 @@ namespace IocpSharp.Http
             {
                 Close();
             }
+            if (payload == "ping")
+            {
+                Ping();
+            }
         }
 
         protected override void OnBinary(Stream inputStream)

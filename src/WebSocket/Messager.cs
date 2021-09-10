@@ -201,6 +201,11 @@ namespace IocpSharp.WebSocket
                     continue;
                 }
 
+                if (frame.OpCode == OpCode.Pong)
+                {
+                    continue;
+                }
+
                 if (frame.OpCode == OpCode.Binary)
                 {
                     using Stream input = Frame.OpenRead(frame, _baseStream);
