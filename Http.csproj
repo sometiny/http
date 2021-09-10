@@ -49,6 +49,7 @@
     <Compile Include="demo\HelloWorldWithChunked.cs" />
     <Compile Include="demo\HelloWorldWithResponser.cs" />
     <Compile Include="demo\HelloWorld.cs" />
+    <Compile Include="demo\WebSocketMessager.cs" />
     <Compile Include="demo\WebSocketTest.cs" />
     <Compile Include="demo\HttpServerUpload.cs" />
     <Compile Include="demo\KeepAliveTest.cs" />
