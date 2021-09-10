@@ -33,7 +33,7 @@ namespace IocpSharp.Http
                 }
                 catch (IOException)
                 {
-                    Console.WriteLine("客户端连接断开，可能是强制刷新了页面，关闭了socket，而没有发送Close帧。");
+                    Console.WriteLine("客户端连接断开");
                     break;
                 }
                 Console.WriteLine($"帧类型：{frame.OpCode}，是否有掩码：{frame.Mask}，帧长度：{frame.PayloadLength}");
@@ -49,7 +49,7 @@ namespace IocpSharp.Http
                 //收到关闭帧，需要必要情况下需要向客户端回复一个关闭帧。
                 //关闭帧比较特殊，客户端可能会发送状态码或原因给服务器
                 //可以从payload里面把状态码和原因分析出来
-                //前两个字节位状态码，short；紧跟着状态码的是原因。
+                //前两个字节位状态码，unsigned int；紧跟着状态码的是原因。
                 if (frame.OpCode == OpCode.Close)
                 {
                     int code = 0;
@@ -58,8 +58,9 @@ namespace IocpSharp.Http
                     if(payload.Length >= 2) {
                         code = payload[0] << 8 | payload[1];
                         reason = Encoding.UTF8.GetString(payload, 2, payload.Length - 2);
+
+                        Console.WriteLine($"关闭原因：{code}，{reason}");
                     }
-                    Console.WriteLine($"关闭原因：{code}，{reason}");
 
                     //正常关闭WebSocket，回复关闭帧
                     //其他Code直接退出循环关闭基础流
