@@ -116,6 +116,17 @@ namespace IocpSharp.WebSocket
             return _readStream = new FrameReadStream(MaskKey, PayloadLength, stream, true);
         }
 
+        /// <summary>
+        /// 静态方法，从Frame打开一个流
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <param name="stream"></param>
+        /// <returns>如果frame的FIN标识为1，直接返回FrameReadStream；否则返回一个MultipartFrameReadStream，MultipartFrameReadStream可以将后续frame都读完，直到FIN标识为0</returns>
+        public static Stream OpenRead(Frame frame, Stream stream) {
+            if (frame.Fin) return frame.OpenRead(stream);
+            return new MultipartFrameReadStream(frame, stream, true);
+        }
+
         private byte[] CreateMetaBytes() {
 
             long payloadLength = PayloadLength;

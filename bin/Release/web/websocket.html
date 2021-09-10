@@ -2,76 +2,107 @@
 <html>
 
 <head>
+  <title>WebSocket测试</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <meta name="renderer" content="webkit">
+  <style type="text/css">
+    .red {
+      color: red
+    }
+
+    .green {
+      color: green
+    }
+
+    .gray {
+      color: gray
+    }
+
+    .gray-333 {
+      color: #333
+    }
+
+    .gray-666 {
+      color: #666
+    }
+  </style>
+  <!--刚好前面我们HTTP测试的时候保留了个vue.js，用起来-->
+  <script src="/vue.js"></script>
 </head>
 
 <body>
-  <button onclick="connect()">开始</button>
-  <div id="messages" style="font-size: 12px;"></div>
+  <div id="app">
+    <button v-if="status === 0" @click="connect">连接</button>
+    <button v-else-if="status=== 1">连接中...</button>
+    <div v-else>
+      <textarea cols="80" rows="5" v-model="message"></textarea><br />
+      <button @click="sendMessgae">发送</button>
+      <button @click="disconnect">断开</button>
+    </div>
+
+    <div style="font-size: 12px;">
+      <div v-for="message in messages" :class="message.className">{{message.text}}</div>
+    </div>
+  </div>
   <script>
-    function appendMessage(message, color) {
-      var el = document.createElement('div');
-      el.innerHTML = message
-      el.style.color = color;
-      document.getElementById('messages').appendChild(el);
-      return el;
-    }
-    function appendError(message) {
-      return appendMessage(message, 'red');
-    }
-    function appendWarning(message) {
-      return appendMessage(message, 'orange');
-    }
-    let socketClosed = true;
-
-    function sendMessage(websocket) {
-      var message = JSON.stringify({ message: "i'm anlige;", 'timestamp': ((+new Date()) / 1000).toFixed(0) });
-      var el = appendMessage("&gt; " + message, '#666');
-      websocket.send(message);
-    }
-
-    function connect() {
-      if (!socketClosed) {
-        return;
-      }
-      var messageReceived = 0;
-      document.getElementById('messages').innerHTML = '';
-
-      const webSocket = new WebSocket('ws://127.0.0.1:4189/');
-      webSocket.onopen = function () {
-        appendMessage('connection opened', 'green');
-        socketClosed = false;
-        sendMessage(webSocket);
-      }
-
-      webSocket.onmessage = function (message) {
-        var el = appendMessage("&lt; " + message.data, '#333');
-        el.style.marginBottom = '5px';
-        messageReceived++;
-        if (messageReceived >= 5) {
-          webSocket.close();
-          return;
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          messages: [],
+          status: 0,
+          socket: null,
+          message: ''
         }
-        window.setTimeout(function () {
-          sendMessage(webSocket);
-        }, 1000);
-      };
+      },
+      created() { },
+      methods: {
+        appendMessage(text, className) {
+          className = className || '';
+          this.messages.push({ text, className });
+        },
+        disconnect() {
+          this.socket.close();
+        },
+        sendMessgae() {
+          var message = JSON.stringify({ message: this.message, 'timestamp': ((+new Date()) / 1000).toFixed(0) });
+          this.appendMessage("> " + message, 'gray-666');
+          this.socket.send(message);
+        },
+        connect() {
+          if (this.status !== 0) {
+            return;
+          }
+          const that = this;
+          this.messages = [];
+          this.status = 1;
+
+          const webSocket = new WebSocket('ws://127.0.0.1:4189/');
+          webSocket.onopen = function () {
+            that.appendMessage('connection opened', 'green');
+            that.status = 2
+            that.socket = webSocket;
+          }
+
+          webSocket.onmessage = function (message) {
+            that.appendMessage("< " + message.data, 'gray-333');
+          };
 
 
-      webSocket.onclose = function (code, reason) {
-        appendWarning('connection closed');
-        socketClosed = true;
+          webSocket.onclose = function (code, reason) {
+            that.appendMessage('connection closed', 'red');
+            that.status = 0;
+          }
+
+          webSocket.onerror = function (ex) {
+            that.appendMessage(ex.message, 'red');
+            that.status = 0;
+          }
+        }
       }
-
-      webSocket.onerror = function (ex) {
-        appendError(ex.message);
-        socketClosed = true;
-      }
-    }
-    connect();
+    });
   </script>
 </body>
 
