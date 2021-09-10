@@ -13,7 +13,8 @@ namespace IocpSharp.WebSocket
     public enum OpCode
     {
         /// <summary>
-        /// 我也不知道该怎么“称呼他”
+        /// 后续帧，当帧是非结束帧的时候，后续帧会被标记为Continuation
+        /// 应用程序需要一直读帧，直到读到结束帧。
         /// </summary>
         Continuation = 0,
 

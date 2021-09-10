@@ -239,6 +239,7 @@ namespace IocpSharp.Http
             //发送响应
             responser.WriteHeader(stream);
 
+           
             //开始WebSocket消息的接收和发送
             OnWebSocket(request, stream);
             return true;
