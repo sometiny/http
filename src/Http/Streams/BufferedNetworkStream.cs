@@ -12,6 +12,16 @@ namespace IocpSharp.Http.Streams
     public class BufferedNetworkStream : NetworkStream
     {
         /// <summary>
+        /// 获取基础Socket
+        /// </summary>
+        public Socket BaseSocket
+        {
+            get
+            {
+                return Socket;
+            }
+        }
+        /// <summary>
         /// 实现NetworkStream的两个构造方法
         /// </summary>
         /// <param name="baseSocket">基础Socket</param>

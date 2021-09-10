@@ -12,6 +12,7 @@ using IocpSharp.Server;
 using IocpSharp.Http.Utils;
 using IocpSharp.WebSocket;
 using IocpSharp.WebSocket.Frames;
+using System.Net;
 
 namespace IocpSharp.Http
 {
@@ -24,7 +25,44 @@ namespace IocpSharp.Http
         }
         protected override void OnWebSocket(HttpRequest request, Stream stream)
         {
-            base.OnWebSocket(request, stream);
+            new MyMessager(stream).Accept();
+        }
+    }
+
+    public class MyMessager : Messager
+    {
+        private EndPoint _remoteEndPoint = null;
+        public MyMessager(Stream stream) : base(stream) {
+            if(stream is BufferedNetworkStream networkStream)
+            {
+                _remoteEndPoint = networkStream.BaseSocket.RemoteEndPoint ;
+            }
+        }
+
+        protected override void OnConnected()
+        {
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 新客户端连接：{_remoteEndPoint}"  );
+        }
+        protected override void OnDisconnected()
+        {
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 连接断开：{_remoteEndPoint}");
+        }
+
+        protected override void OnText(string payload)
+        {
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到文本数据：{payload}");
+            Send($"服务器接收到文本数据：{payload}");
+            if(payload == "close")
+            {
+                Close();
+            }
+        }
+
+        protected override void OnBinary(Stream inputStream)
+        {
+            byte[] payload = StreamUtils.ReadAllBytes(inputStream);
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss} > 接收到二进制数据，长度：{payload.Length}");
+            Send($"服务器接收到二进制数据，长度：{payload.Length}");
         }
     }
 }

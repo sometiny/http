@@ -49,6 +49,7 @@
     <Compile Include="demo\HelloWorldWithChunked.cs" />
     <Compile Include="demo\HelloWorldWithResponser.cs" />
     <Compile Include="demo\HelloWorld.cs" />
+    <Compile Include="demo\WebSocketTest.cs" />
     <Compile Include="demo\HttpServerUpload.cs" />
     <Compile Include="demo\KeepAliveTest.cs" />
     <Compile Include="demo\PostAndQueryString.cs" />
@@ -77,11 +78,13 @@
     <Compile Include="src\Http\Utils\HttpHeaderProperty.cs" />
     <Compile Include="src\Http\Utils\HttpUtility.cs" />
     <Compile Include="src\Http\Utils\MimeTypes.cs" />
+    <Compile Include="src\StreamUtils.cs" />
     <Compile Include="src\WebSocket\Frame.cs" />
     <Compile Include="src\WebSocket\Frames\CloseFrame.cs" />
     <Compile Include="src\WebSocket\Frames\TextFrame.cs" />
     <Compile Include="src\WebSocket\Frames\PongFrame.cs" />
     <Compile Include="src\WebSocket\Frames\PingFrame.cs" />
+    <Compile Include="src\WebSocket\Messager.cs" />
     <Compile Include="src\WebSocket\MultipartFrameReadStream.cs" />
     <Compile Include="src\WebSocket\FrameWriteStream.cs" />
     <Compile Include="src\WebSocket\FrameReadStream.cs" />
