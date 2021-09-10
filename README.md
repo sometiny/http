@@ -12,3 +12,4 @@
 |06、demo/PostAndQueryString.cs|解析POST请求和查询字符串|
 |07、demo/KeepAliveTest.cs|在一个连接中处理多个HTTP请求|
 |08、demo/HttpServerUpload.cs|处理HTTP上传|
+|09、demo/WebSocketTest.cs|WebSocket测试|
