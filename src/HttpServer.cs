@@ -85,13 +85,22 @@ namespace IocpSharp.Http
                 if(frame.OpCode == OpCode.Binary)
                 {
                     Console.WriteLine(string.Join(", ", payload));
+
+                    //为了测试，我们随便发送测试内容给客户端
+                    TextFrame response = new TextFrame($"服务器收到二进制数据，长度：{payload.Length}");
+                    response.OpenWrite(stream);
                     continue;
                 }
 
                 //收到文本，打印出来
                 if (frame.OpCode == OpCode.Text)
                 {
-                    Console.WriteLine(Encoding.UTF8.GetString(payload));
+                    string message = Encoding.UTF8.GetString(payload);
+                    Console.WriteLine(message);
+
+                    //为了测试，我们把信息再发回客户端
+                    TextFrame response = new TextFrame($"服务器接收到文本数据：{message}");
+                    response.OpenWrite(stream);
                 }
 
             }

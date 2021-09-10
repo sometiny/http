@@ -67,9 +67,8 @@
           this.socket.close();
         },
         sendMessgae() {
-          var message = JSON.stringify({ message: this.message, 'timestamp': ((+new Date()) / 1000).toFixed(0) });
-          this.appendMessage("> " + message, 'gray-666');
-          this.socket.send(message);
+          this.appendMessage("> " + this.message, 'gray-999');
+          this.socket.send(this.message);
         },
         connect() {
           if (this.status !== 0) {

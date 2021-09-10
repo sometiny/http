@@ -9,6 +9,7 @@ namespace IocpSharp.WebSocket.Frames
 {
     /// <summary>
     /// 关闭帧。服务端收到关闭帧后，需要向客户端回复一个关闭帧
+    /// 状态码可参考：https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
     /// </summary>
     public class CloseFrame : Frame
     {

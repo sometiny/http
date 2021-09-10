@@ -79,6 +79,7 @@
     <Compile Include="src\Http\Utils\MimeTypes.cs" />
     <Compile Include="src\WebSocket\Frame.cs" />
     <Compile Include="src\WebSocket\Frames\CloseFrame.cs" />
+    <Compile Include="src\WebSocket\Frames\TextFrame.cs" />
     <Compile Include="src\WebSocket\Frames\PongFrame.cs" />
     <Compile Include="src\WebSocket\Frames\PingFrame.cs" />
     <Compile Include="src\WebSocket\MultipartFrameReadStream.cs" />
