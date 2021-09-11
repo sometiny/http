@@ -81,7 +81,7 @@ namespace IocpSharp.Http
             if (payload == "close")
             {
                 Send($"服务器接收到close指令，关闭连接。");
-                Close();
+                Close(1000, "client claim");
                 return;
             }
             if (payload == "ping")

@@ -40,6 +40,7 @@ namespace IocpSharp.WebSocket
             catch
             {
                 _baseStream?.Close();
+                OnDisconnected();
             }
         }
 
