@@ -10,7 +10,7 @@ namespace IocpSharp.Http
     {
         static void Main(string[] args)
         {
-            HttpServer server = new HttpServer();
+            HttpServerBase server = new WebSocketMessager();
             try
             {
                 server.Start("0.0.0.0", 4189);

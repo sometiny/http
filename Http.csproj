@@ -72,7 +72,6 @@
     <Compile Include="src\Http\Utils\HttpMultipartFormDataParser.cs" />
     <Compile Include="src\Http\Utils\HttpRequestException.cs" />
     <Compile Include="src\Http\HttpResponser.cs" />
-    <Compile Include="src\HttpServer.cs" />
     <Compile Include="src\Http\Utils\HttpStatus.cs" />
     <Compile Include="src\Http\Responsers\ChunkedResponser.cs" />
     <Compile Include="src\Http\Streams\ChunkedWriteStream.cs" />
