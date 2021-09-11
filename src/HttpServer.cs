@@ -26,6 +26,7 @@ namespace IocpSharp.Http
         protected override void OnWebSocket(HttpRequest request, Stream stream)
         {
             //使用自己实现的Messager类处理业务。
+            //可以根据请求的Url不同去实例化不同的Messager，处理不同的业务逻辑。
             new MyMessager(stream).Accept();
         }
     }
