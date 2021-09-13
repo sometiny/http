@@ -23,9 +23,9 @@ namespace IocpSharp.Http
             //设置根目录
             WebRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
         }
-        protected override void OnWebSocket(HttpRequest request, Stream stream)
+        protected override Messager GetMessager(HttpRequest request, Stream stream)
         {
-            new WsMessager(stream).Accept();
+            return new WsMessager(stream);
         }
     }
 
