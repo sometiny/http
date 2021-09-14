@@ -55,6 +55,18 @@
     <Compile Include="demo\KeepAliveTest.cs" />
     <Compile Include="demo\PostAndQueryString.cs" />
     <Compile Include="demo\SendJsFile.cs" />
+    <Compile Include="System.Web\HttpUtility.cs" />
+    <Compile Include="System.Web\Resources\AtlasWeb.cs" />
+    <Compile Include="System.Web\SecurityUtils.cs" />
+    <Compile Include="System.Web\Script.Serialization\JavaScriptObjectDeserializer.cs" />
+    <Compile Include="System.Web\Script.Serialization\JavaScriptSerializer.cs" />
+    <Compile Include="System.Web\Script.Serialization\JavaScriptString.cs" />
+    <Compile Include="System.Web\Script.Serialization\Json.cs" />
+    <Compile Include="System.Web\Script.Serialization\ObjectConverter.cs" />
+    <Compile Include="System.Web\Script.Serialization\ScriptIgnoreAttribute.cs" />
+    <Compile Include="System.Web\Util\HashCodeCombiner.cs" />
+    <Compile Include="System.Web\Util\HttpEncoder.cs" />
+    <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
