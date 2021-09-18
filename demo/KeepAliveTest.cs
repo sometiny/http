@@ -79,12 +79,8 @@ namespace IocpSharp.Http
                     OnServerError(stream, $"请求异常：{e}");
                     break;
                 }
-                finally
-                {
-                    //始终释放请求
-                    request?.Dispose();
-                }
             }
+            request?.Dispose();
             stream.Close();
         }
 
