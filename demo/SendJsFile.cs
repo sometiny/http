@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using IocpSharp.Http.Responsers;
+using IocpSharp.Http.Streams;
 using System.IO.Compression;
 using IocpSharp.Server;
 
@@ -15,9 +16,9 @@ namespace IocpSharp.Http
     {
         protected override void NewClient(Socket client)
         {
-            Stream stream = new NetworkStream(client, true);
+            HttpStream stream = new HttpStream(new NetworkStream(client, true), false);
             //捕获一个HttpRequest
-            HttpRequest request = HttpRequest.Capture(stream);
+            HttpRequest request = stream.Capture<HttpRequest>();
 
             //从request拿到Url
             string url = request.Url;

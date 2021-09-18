@@ -35,17 +35,17 @@ namespace IocpSharp.Http
             //控制台输出下，跟踪下新连接
             Console.WriteLine($"New Client: {client.RemoteEndPoint}");
 
-            Stream stream = new BufferedNetworkStream(client, true);
+            HttpStream stream = new HttpStream(new BufferedNetworkStream(client, true), false);
 
             //设置每个链接能处理的请求数
             int processedRequest = 0;
+            HttpRequest request = null;
             while (processedRequest < MaxRequestPerConnection)
             {
-                HttpRequest request = null;
                 try
                 {
                     //捕获一个HttpRequest
-                    request = HttpRequest.Capture(stream);
+                    request = request == null ? stream.Capture<HttpRequest>() : request.Next();
 
                     //控制台输出，跟踪下新请求
                     Console.WriteLine($"New Request: {request.Method} {request.Url}");

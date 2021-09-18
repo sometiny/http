@@ -16,9 +16,9 @@ namespace IocpSharp.Http
     {
         protected override void NewClient(Socket client)
         {
-            Stream stream = new BufferedNetworkStream(client, true);
+            HttpStream stream = new HttpStream(new BufferedNetworkStream(client, true), false);
             //捕获一个HttpRequest
-            HttpRequest request = HttpRequest.Capture(stream);
+            HttpRequest request = stream.Capture<HttpRequest>();
 
             //懒得去计算数据长度，直接用Chunked方式发送数据
             HttpResponser responser = new ChunkedResponser();

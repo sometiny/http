@@ -10,7 +10,7 @@ namespace IocpSharp.Http
     {
         static void Main(string[] args)
         {
-            StartWebSocketServer(4189);
+            StartStaticServer(4189);
 
             Console.ReadLine();
         }
@@ -31,7 +31,7 @@ namespace IocpSharp.Http
         private static void StartStaticServer(int port)
         {
             //静态文件服务器
-            HttpServerBase server = new StaticHttpServer();
+            HttpServerBase server = new HttpServerUplaod();
             try
             {
                 server.Start("0.0.0.0", port);
