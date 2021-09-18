@@ -23,23 +23,20 @@ namespace IocpSharp.Http
             //设置根目录
             WebRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
         }
-        protected override Messager GetMessager(HttpRequest request, Stream stream)
+        protected override Messager GetMessager(HttpRequest request, Stream stream, EndPoint localEndPoint, EndPoint remoteEndPoint)
         {
-            return new WsMessager(stream);
+            return new WsMessager(stream, localEndPoint, remoteEndPoint);
         }
     }
 
     public class WsMessager : Messager
     {
         private EndPoint _remoteEndPoint = null;
-        public WsMessager(Stream stream) : base(stream)
+        public WsMessager(Stream stream, EndPoint localEndPoint, EndPoint remoteEndPoint) : base(stream)
         {
 
             //获取客户端的连接信息
-            if (stream is BufferedNetworkStream networkStream)
-            {
-                _remoteEndPoint = networkStream.BaseSocket.RemoteEndPoint;
-            }
+            _remoteEndPoint = remoteEndPoint;
         }
 
         /// <summary>
