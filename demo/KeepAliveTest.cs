@@ -59,8 +59,6 @@ namespace IocpSharp.Http
                     //如果处理程序返回false，那么我们退出循环，关掉连接。
                     if (!handler(request, stream)) break;
 
-                    //确保当前请求的请求实体读取完毕
-                    request.EnsureEntityBodyRead();
                     //释放掉当前请求，准备下一次请求
                     processedRequest++;
                 }
