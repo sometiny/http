@@ -62,9 +62,9 @@ namespace IocpSharp.Http
                     //释放掉当前请求，准备下一次请求
                     processedRequest++;
                 }
-                catch (HttpRequestException e)
+                catch (HttpHeaderException e)
                 {
-                    if (e.Error == HttpRequestError.ConnectionLost) break;
+                    if (e.Error == HttpHeaderError.ConnectionLost) break;
 
                     //客户端发送的请求异常
                     OnBadRequest(stream, $"请求异常：{e.Error}");
