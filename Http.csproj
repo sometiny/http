@@ -44,17 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="demo\BufferedStreamTest.cs" />
-    <Compile Include="demo\Gzip.cs" />
-    <Compile Include="demo\HelloWorldWithChunked.cs" />
-    <Compile Include="demo\HelloWorldWithResponser.cs" />
-    <Compile Include="demo\HelloWorld.cs" />
-    <Compile Include="demo\StaticHttpServer.cs" />
-    <Compile Include="demo\WebSocketMessager.cs" />
     <Compile Include="demo\HttpServerUpload.cs" />
-    <Compile Include="demo\KeepAliveTest.cs" />
-    <Compile Include="demo\PostAndQueryString.cs" />
-    <Compile Include="demo\SendJsFile.cs" />
+    <Compile Include="demo\StaticHttpServer.cs" />
     <Compile Include="System.Web\HttpUtility.cs" />
     <Compile Include="System.Web\Resources\AtlasWeb.cs" />
     <Compile Include="System.Web\SecurityUtils.cs" />
