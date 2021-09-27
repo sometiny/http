@@ -49,28 +49,30 @@ namespace IocpSharp.Http
         /// <returns></returns>
         private void OnReceivedPost(HttpRequest request)
         {
-            StringBuilder sb = new StringBuilder();
+            HttpResponser response = HttpResponser.Create(request);
 
-            sb.Append("<style type=\"text/css\">body{font-size:12px;}</style>");
-            sb.Append("<h4>上传表单演示</h4>");
-            sb.Append($"<a href=\"/index.html\">返回</a><br />");
+            response.ContentType = "text/html; charset=utf-8";
 
-            sb.Append($"ContentType：{request.ContentType}<br />");
-            sb.Append($"Boundary：{request.Boundary}<br />");
+            response.Write("<style type=\"text/css\">body{font-size:12px;}</style>");
+            response.Write("<h4>上传表单演示</h4>");
+            response.Write($"<a href=\"/index.html\">返回</a><br />");
+
+            response.Write($"ContentType：{request.ContentType}<br />");
+            response.Write($"Boundary：{request.Boundary}<br />");
 
 
-            sb.Append($"<h5>上传表单数据：</h5>");
+            response.Write($"<h5>上传表单数据：</h5>");
             foreach (string formName in request.Form.Keys)
             {
-                sb.Append($"{formName}: {request.Form[formName]}<br />");
+                response.Write($"{formName}: {request.Form[formName]}<br />");
             }
 
-            sb.Append($"<h5>上传文件列表：</h5>");
+            response.Write($"<h5>上传文件列表：</h5>");
             foreach (FileItem file in request.Files)
             {
-                sb.Append($"{file.Name}: {file.FileName}, {file.TempFile}<br />");
+                response.Write($"{file.Name}: {file.FileName}, {file.TempFile}<br />");
             }
-            Next(request, new HttpTextResponser(sb.ToString()));
+            Next(request, response);
         }
     }
 }
